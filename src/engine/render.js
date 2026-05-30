@@ -4,7 +4,7 @@ import {
   WATER_SURFACE_Y,
   SEABED_WORLD_Y,
   SEABED_HEIGHT,
-  HUNGER_LIMIT,
+  isStarving,
   BOOST_DURATION,
   BOOST_COOLDOWN,
   BOOST_STATES,
@@ -66,7 +66,7 @@ export function drawHud(ctx, game, shark) {
     return;
   }
 
-  const isStarving = game.hungerTimer >= HUNGER_LIMIT;
+  const starving = isStarving(game.hungerTimer);
 
   ctx.font = "16px sans-serif";
   ctx.textAlign = "left";
@@ -78,8 +78,11 @@ export function drawHud(ctx, game, shark) {
   ctx.fillStyle = "#ffffff";
   ctx.fillText(`HP: ${Math.ceil(shark.hp)}`, 16, 16);
   ctx.fillText(`Score: ${Math.floor(game.score)}s`, 16, 38);
-  ctx.fillStyle = isStarving ? "#ff5252" : "#ffffff";
-  ctx.fillText(`Hunger: ${game.hungerTimer.toFixed(1)}s`, 16, 60);
+  ctx.fillStyle = starving ? "#ff5252" : "#ffffff";
+  const hungerLabel = starving
+    ? "Starving!"
+    : `Hunger: ${game.hungerTimer.toFixed(1)}s`;
+  ctx.fillText(hungerLabel, 16, 60);
   ctx.fillStyle = "#ffd54f";
   ctx.fillText(`Best: ${game.highScore}s`, 16, 82);
 

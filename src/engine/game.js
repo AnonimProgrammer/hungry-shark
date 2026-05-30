@@ -1,8 +1,8 @@
 import {
-  HUNGER_LIMIT,
   STARVATION_DRAIN,
   HIGH_SCORE_KEY,
   ENTITY_RECYCLE_DISTANCE,
+  isStarving,
 } from "../config/constant.js";
 import { createInitialEntities, getDefaultSpawnCenter } from "../domain/entities.js";
 import { recycleDistantFish } from "../domain/fish.js";
@@ -48,10 +48,10 @@ function recordHighScore(game, dom) {
 function updateTimers(game, shark, deltaSec) {
   game.score += deltaSec;
   game.hungerTimer += deltaSec;
+  shark.isStarving = isStarving(game.hungerTimer);
 
-  if (game.hungerTimer >= HUNGER_LIMIT) {
-    const starvationDrain = STARVATION_DRAIN * deltaSec;
-    shark.hp = Math.max(0, shark.hp - starvationDrain);
+  if (shark.isStarving) {
+    shark.hp = Math.max(0, shark.hp - STARVATION_DRAIN * deltaSec);
   }
 }
 
@@ -76,6 +76,7 @@ export function resetGame(game, shark, domain, input) {
   shark.angle = 0;
   shark.hp = 100;
   shark.hitFlash = 0;
+  shark.isStarving = false;
   shark.resetBoost();
 
   game.score = 0;

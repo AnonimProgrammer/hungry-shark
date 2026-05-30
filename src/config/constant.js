@@ -16,8 +16,12 @@ export const FISH_SURFACE_CLEARANCE = 50;
 export const SEABED_HAZARD_CLEARANCE_MIN = 125;
 export const SEABED_HAZARD_CLEARANCE_MAX = 250;
 
-export const HUNGER_LIMIT = 5;
-export const STARVATION_DRAIN = 10;
+export const HUNGER_LIMIT = 10;
+export const STARVATION_DRAIN = 5;
+
+export function isStarving(hungerTimer) {
+  return hungerTimer >= HUNGER_LIMIT;
+}
 export const POISON_DAMAGE = 20;
 export const BOMB_DAMAGE = 30;
 export const BOMB_RESPAWN_DELAY = 5;

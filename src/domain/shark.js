@@ -16,6 +16,7 @@ export class Shark {
     this.baseSpeed = 3;
     this.hp = 100;
     this.hitFlash = 0;
+    this.isStarving = false;
     this.boostStatus = BOOST_STATES.READY;
     this.boostTimer = 0;
   }
@@ -75,7 +76,12 @@ export class Shark {
   }
 
   draw(ctx) {
-    const bodyColor = this.hitFlash > 0 ? "#ef5350" : "#546e7a";
+    let bodyColor = "#546e7a";
+    if (this.hitFlash > 0) {
+      bodyColor = "#ef5350";
+    } else if (this.isStarving) {
+      bodyColor = "#ef9a9a";
+    }
     drawSharkShape(ctx, this.x, this.y, this.angle, this.radius, bodyColor, 3);
   }
 }

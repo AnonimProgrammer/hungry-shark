@@ -18,8 +18,8 @@ export function handleFishCollisions(shark, fishes, game) {
     }
 
     if (fish.type === "common") {
-      shark.hp = Math.min(100, shark.hp + 5);
       game.hungerTimer = 0;
+      shark.isStarving = false;
     } else if (fish.type === "poisonous") {
       shark.hp = Math.max(0, shark.hp - POISON_DAMAGE);
       shark.hitFlash = 12;

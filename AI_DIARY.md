@@ -15,6 +15,9 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 ## Entries
 
+### [2026-05-30] — Hunger & starvation (enhanced rules)
+12. [hunger-starvation-mechanic](prompts/012-hunger-starvation-mechanic.md) — 10 s grace, −5 HP/s drain, light red shark tint, eat resets hunger only
+
 ### [2026-05-30] — Enhanced game rules (design doc)
 11. [enhance-game-rules-design](prompts/011-enhance-game-rules-design.md) — Fish groups without individual respawn, strike scoring, poison DOT, hunger/boost/HUD spec in project-design.md
 
