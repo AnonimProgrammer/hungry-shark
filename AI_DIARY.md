@@ -15,6 +15,9 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 ## Entries
 
+### [2026-05-30] — Enhanced game rules (design doc)
+11. [enhance-game-rules-design](prompts/011-enhance-game-rules-design.md) — Fish groups without individual respawn, strike scoring, poison DOT, hunger/boost/HUD spec in project-design.md
+
 ### [2026-05-30] — Dynamic world (camera + unbounded ocean)
 10. [dynamic-world-camera](prompts/010-dynamic-world-camera.md) — Bigger canvas, camera follows shark, world coords; follow-up fixed seabed depth and fish/hazard spawn bands
 

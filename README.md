@@ -8,26 +8,26 @@ A browser-based 2D underwater survival game built with **HTML, CSS, and vanilla 
 
 ## Game Description
 
-You control a hungry shark in an ocean ecosystem. Swim through the water, hunt schools of fish to stay fed, and avoid hazards. You can break the surface and jump into the sky — gravity pulls you back down. Survive as long as you can before hunger or damage ends the run.
+You control a hungry shark in a dynamic ocean ecosystem. Swim through an unbounded world, hunt **schools of fish** to stay fed and build score, and avoid hazards. The camera follows you as you explore — new fish groups appear ahead as you move. Survive as long as you can before hunger or damage ends the run.
 
-The playfield is a fixed-camera viewport divided into zones from top to bottom:
+The playfield is a camera viewport into world coordinates divided into zones from top to bottom:
 
 | Zone | Description |
 |------|-------------|
-| **Sky** | Above the water surface. Gravity applies when the shark is airborne. |
+| **Sky** | Above the water surface. Shark can enter; no gravity in current scope. |
 | **Water surface line** | Boundary between sky and the main play area. |
-| **Water zone** | Light-blue main play area — shark, fish, and hazards live here. |
+| **Water zone** | Light-blue main play area — shark, fish schools, and hazards live here. |
 | **Seabed** | Dark-brown floor at the bottom. Hard stop for downward movement. |
 
 ### Entities
 
 | Entity | Type | Behavior |
 |--------|------|----------|
-| **Shark** | Player | Rotates toward mouse; swims on LMB hold; 2× speed boost on double-click + hold. HP 0–100, hunger timer, boost state (`READY` / `ACTIVE` / `COOLDOWN`). |
-| **Common fish** | Consumable | Orange circles in schools. +5 HP (cap 100) and reset hunger timer on contact. |
-| **Poisonous fish** | Hazard | Green circles, swim alone. Deal contact damage on collision. |
-| **Underwater bomb** | Hazard | Dark spiky circle in the water zone. MVP: avoid contact; later −30 HP on touch. |
-| **HUD** | UI overlay | Displays HP, hunger timer, and boost meter. |
+| **Shark** | Player | Rotates toward mouse; swims on LMB hold; boost on double-click (meter-based). HP 0–100. Status tints: light red (starving), light green (poisoned). |
+| **Common fish** | Consumable | Orange mini-sharks in **groups** that spawn together and disperse. Eaten fish are **gone** — new groups appear as the shark explores. Feeding resets hunger and earns strike score. |
+| **Poisonous fish** | Hazard | Green solo fish (small count). **20 HP over 4 seconds** (DOT), not instant. Light-green shark signal while poisoned. |
+| **Underwater bomb** | Hazard | Dark spiky circle. Explosion VFX, −30 HP, respawns after delay. *(Current implementation — unchanged.)* |
+| **HUD** | UI overlay | Top-right: HP bar (red), boost bar (dark blue), golden score, settings menu. |
 
 **Future scope (not in MVP):** humans at the surface, aggressive predator fish.
 
@@ -45,28 +45,50 @@ The playfield is a fixed-camera viewport divided into zones from top to bottom:
 |-------|--------|
 | **Mouse move** | Shark rotates to face the cursor |
 | **Left mouse button (hold)** | Swim forward along current angle toward the cursor |
-| **Double-click + hold LMB** | 2× speed boost for ~2–3 seconds, then cooldown until `READY` again |
+| **Double-click** | Activate boost (drains boost meter while in use) |
 
 ### Objective
 
-Eat common orange fish to restore HP and reset the hunger timer. Avoid poisonous fish and underwater bombs.
+Hunt common fish schools to reset hunger and rack up **strike score**. Chain eats within 2 seconds to double each bonus (5 → 10 → 20 → …). Avoid poisonous fish and underwater bombs.
 
 ### Win / Lose
 
 | Outcome | Condition |
 |---------|-----------|
-| **Win** | No fixed win state — survive as long as possible; score = survival duration. |
-| **Lose** | HP drops to 0 from starvation, poison, or bomb damage. Game Over overlay shows final score/time. |
+| **Win** | No fixed win state — maximize score through efficient school hunting. |
+| **Lose** | HP drops to 0 from starvation, poison, or bomb damage. Game Over overlay shows final score. |
 
-### Hunger Rule
+### Hunger & HP
 
-If the shark does not eat a common fish within any rolling **5-second** window, starvation triggers and drains **−10 HP/sec** until food is caught.
+**Starvation:** no common fish within **10 seconds** → **−5 HP/sec** (light red signal).
+
+**HP regen:** no instant heal on eat. Regen **+10 HP/sec** starts only after **2 seconds** with no starvation, no active poison, and no HP loss (bombs, poison ticks, or starvation). Cap: 100 HP.
+
+### Strike Scoring
+
+| Rule | Value |
+|------|-------|
+| First fish in a chain | +5 points |
+| Each next fish (within 2s) | Previous bonus × 2 |
+| Chain expires | After 2 seconds without eating |
+
+Example: hunting an 8-fish school without breaking chain → 5 + 10 + 20 + 40 + 80 + 160 + 320 + 640.
+
+### Boost
+
+Double-click toggles boost (2× speed). Meter drains **only while boosting** and stops when boost is off. After **2 seconds** idle, meter regenerates from empty to full in **10 seconds**.
+
+### HUD & Settings
+
+Top-right overlay: red HP bar, dark blue boost bar (no numeric HP), golden score below. Settings (⚙) offers Continue, Restart, and a mock Turn off music toggle. Best score removed from in-game HUD only; kept on start and game-over screens.
+
+**Full spec:** [docs/project-design.md](docs/project-design.md) — changelog (§0), rules (§3), HUD (§4), implementation checklist (§7), testing checklist (§8).
 
 ---
 
 ## Tech Decisions
 
-**Approach: hybrid OOP + functional** (see [docs/project-design.md §4](docs/project-design.md#4-technical-architecture--loop-design))
+**Approach: hybrid OOP + functional** (see [docs/project-design.md §5](docs/project-design.md#5-technical-architecture--loop-design))
 
 | Layer | Style | What |
 |-------|-------|------|
@@ -78,10 +100,10 @@ If the shark does not eat a common fish within any rolling **5-second** window, 
 ### Game loop (each frame)
 
 1. Clear canvas (`ctx.clearRect`)
-2. Process input (mouse position, click states)
-3. Update physics & logic (movement, timers, fish arrays)
+2. Process input (mouse position, click states, boost)
+3. Update physics & logic (movement, hunger/poison DOT, strike chain, fish groups, boost meter)
 4. Evaluate collisions
-5. Render (background, entities, HUD)
+5. Render (background, entities, top-right HUD)
 
 ---
 
@@ -101,7 +123,7 @@ Prompt details live in [`prompts/`](prompts/). The diary indexes them:
 
 ## Known Bugs / What I'd Fix Next
 
-_Game not yet implemented — updated as development progresses._
+_Design spec updated — implementation catching up._
 
 - [x] Scaffold `index.html`, canvas, and main game loop
 - [x] Implement `Shark` boost state machine (2× speed on double-click)
@@ -110,8 +132,14 @@ _Game not yet implemented — updated as development progresses._
 - [x] Add HP / hunger mechanics and survival score
 - [x] Start screen and game over screen
 - [x] Game restart without page refresh
-- [x] High score saved and displayed via localStorage
-- [ ] Tune boost cooldown and spawn rates
+- [x] Dynamic world with camera follow
+- [ ] **Enhanced rules (design complete)** — see [implementation checklist](docs/project-design.md#7-implementation-gap-checklist)
+- [ ] Fish groups without individual respawn; spawn ahead of shark
+- [ ] Strike-based scoring with 2s chain window
+- [ ] Poison DOT (4s) and status tints (light green)
+- [ ] Updated hunger (10s / −5 HP/sec) and HP regen (+10/s after 2s clear of starve/poison/damage)
+- [ ] Boost meter drain/regen (2s delay, 10s refill, stoppable)
+- [ ] Top-right HUD bars + settings menu; best score off HUD only (keep on start/game-over)
 
 ---
 
