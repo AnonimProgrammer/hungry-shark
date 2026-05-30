@@ -2,7 +2,7 @@ import {
   BOMB_RESPAWN_DELAY,
   BOMB_EXPLOSION_DURATION,
 } from "../config/constant.js";
-import { randomWaterPosition } from "./spawn.js";
+import { randomBombPosition } from "./spawn.js";
 
 export class Bomb {
   constructor(x, y) {
@@ -21,7 +21,7 @@ export class Bomb {
     this.explosionTimer = BOMB_EXPLOSION_DURATION;
   }
 
-  update(deltaSec) {
+  update(deltaSec, respawnNearX, respawnNearY) {
     if (this.exploding) {
       this.explosionTimer -= deltaSec;
       if (this.explosionTimer <= 0) {
@@ -34,7 +34,7 @@ export class Bomb {
     if (!this.active && this.respawnTimer > 0) {
       this.respawnTimer -= deltaSec;
       if (this.respawnTimer <= 0) {
-        const pos = randomWaterPosition();
+        const pos = randomBombPosition(respawnNearX, respawnNearY);
         this.x = pos.x;
         this.y = pos.y;
         this.active = true;

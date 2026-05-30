@@ -1,7 +1,5 @@
 import {
-  CANVAS_WIDTH,
-  WATER_SURFACE_Y,
-  BOTTOM_LINE_Y,
+  SEABED_WORLD_Y,
   BOOST_MULTIPLIER,
   BOOST_DURATION,
   BOOST_COOLDOWN,
@@ -66,15 +64,14 @@ export class Shark {
   moveForward(speed) {
     this.x += Math.cos(this.angle) * speed;
     this.y += Math.sin(this.angle) * speed;
-    this.clampToBounds();
+    this.applyWorldPhysics();
   }
 
-  clampToBounds() {
-    this.x = Math.max(this.radius, Math.min(CANVAS_WIDTH - this.radius, this.x));
-    this.y = Math.max(
-      WATER_SURFACE_Y + this.radius,
-      Math.min(BOTTOM_LINE_Y - this.radius, this.y)
-    );
+  applyWorldPhysics() {
+    const floorY = SEABED_WORLD_Y - this.radius;
+    if (this.y > floorY) {
+      this.y = floorY;
+    }
   }
 
   draw(ctx) {

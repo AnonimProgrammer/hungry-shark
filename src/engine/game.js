@@ -1,12 +1,13 @@
 import {
-  CANVAS_WIDTH,
-  CANVAS_HEIGHT,
   HUNGER_LIMIT,
   STARVATION_DRAIN,
   HIGH_SCORE_KEY,
+  ENTITY_RECYCLE_DISTANCE,
 } from "../config/constant.js";
-import { createInitialEntities } from "../domain/entities.js";
+import { createInitialEntities, getDefaultSpawnCenter } from "../domain/entities.js";
+import { recycleDistantFish } from "../domain/fish.js";
 import { evaluateCollisions } from "./collision.js";
+import { updateCamera, screenToWorld } from "./camera.js";
 import { render } from "./render.js";
 
 export function createGameState() {
@@ -69,8 +70,9 @@ function showGameOverScreen(game, dom) {
 }
 
 export function resetGame(game, shark, domain, input) {
-  shark.x = CANVAS_WIDTH / 2;
-  shark.y = CANVAS_HEIGHT / 2;
+  const spawnCenter = getDefaultSpawnCenter();
+  shark.x = spawnCenter.x;
+  shark.y = spawnCenter.y;
   shark.angle = 0;
   shark.hp = 100;
   shark.hitFlash = 0;
@@ -79,9 +81,11 @@ export function resetGame(game, shark, domain, input) {
   game.score = 0;
   game.hungerTimer = 0;
 
-  const entities = createInitialEntities();
+  const entities = createInitialEntities(spawnCenter);
   domain.fishes = entities.fishes;
   domain.bomb = entities.bomb;
+
+  updateCamera(domain.camera, shark.x, shark.y);
 
   input.isMouseDown = false;
   input.doubleClicked = false;
@@ -98,7 +102,8 @@ export function startGame(game, shark, domain, input, dom) {
 function update(game, shark, domain, input, dom, deltaSec) {
   updateTimers(game, shark, deltaSec);
 
-  shark.rotateToward(input.mouseX, input.mouseY);
+  const worldMouse = screenToWorld(domain.camera, input.mouseX, input.mouseY);
+  shark.rotateToward(worldMouse.x, worldMouse.y);
 
   if (input.doubleClicked) {
     shark.tryActivateBoost();
@@ -111,12 +116,17 @@ function update(game, shark, domain, input, dom, deltaSec) {
     shark.moveForward(shark.getSpeed());
   }
 
-  domain.fishes.forEach((fish) => fish.update());
-  domain.bomb.update(deltaSec);
+  domain.fishes.forEach((fish) => {
+    fish.update();
+    recycleDistantFish(fish, shark.x, shark.y, ENTITY_RECYCLE_DISTANCE);
+  });
+  domain.bomb.update(deltaSec, shark.x, shark.y);
 
   if (shark.hitFlash > 0) {
     shark.hitFlash -= 1;
   }
+
+  updateCamera(domain.camera, shark.x, shark.y);
 
   evaluateCollisions(shark, domain.fishes, domain.bomb, game);
   checkLoseCondition(game, shark, dom);
@@ -133,7 +143,7 @@ export function createGameLoop(ctx, game, shark, domain, input, dom) {
       update(game, shark, domain, input, dom, deltaSec);
     }
 
-    render(ctx, game, shark, domain.fishes, domain.bomb);
+    render(ctx, game, shark, domain.fishes, domain.bomb, domain.camera);
     requestAnimationFrame(gameLoop);
   };
 }

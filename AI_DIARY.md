@@ -15,6 +15,9 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 ## Entries
 
+### [2026-05-30] — Dynamic world (camera + unbounded ocean)
+10. [dynamic-world-camera](prompts/010-dynamic-world-camera.md) — Bigger canvas, camera follows shark, world coords; follow-up fixed seabed depth and fish/hazard spawn bands
+
 ### [2026-05-30] — Shark boost (double-click)
 9. [shark-boost-double-click](prompts/009-shark-boost-double-click.md) — 2× speed burst on double-click, boost state machine, HUD meter
 

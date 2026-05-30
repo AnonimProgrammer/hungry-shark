@@ -26,7 +26,7 @@ export function handleFishCollisions(shark, fishes, game) {
     }
 
     fish.active = false;
-    respawnFish(fish);
+    respawnFish(fish, shark.x, shark.y);
   });
 }
 

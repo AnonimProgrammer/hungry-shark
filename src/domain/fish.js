@@ -1,10 +1,9 @@
-import {
-  CANVAS_WIDTH,
-  WATER_SURFACE_Y,
-  BOTTOM_LINE_Y,
-} from "../config/constant.js";
 import { drawSharkShape } from "./drawing.js";
-import { randomWaterPosition } from "./spawn.js";
+import {
+  randomCommonFishPosition,
+  randomPoisonFishPosition,
+  getFishVerticalBounds,
+} from "./spawn.js";
 
 export class Fish {
   constructor(x, y, type = "common") {
@@ -25,13 +24,7 @@ export class Fish {
     this.x += this.speedX;
     this.y += this.speedY;
 
-    const minY = WATER_SURFACE_Y + this.radius;
-    const maxY = BOTTOM_LINE_Y - this.radius;
-
-    if (this.x - this.radius < 0 || this.x + this.radius > CANVAS_WIDTH) {
-      this.speedX *= -1;
-      this.x = Math.max(this.radius, Math.min(CANVAS_WIDTH - this.radius, this.x));
-    }
+    const { minY, maxY } = getFishVerticalBounds(this.radius, this.type);
 
     if (this.y < minY || this.y > maxY) {
       this.speedY *= -1;
@@ -52,11 +45,13 @@ export class Fish {
 
 export function createFishSchool(count, centerX, centerY) {
   const fish = [];
+  const schoolCenter = randomCommonFishPosition(centerX, centerY);
+
   for (let i = 0; i < count; i++) {
     fish.push(
       new Fish(
-        centerX + (Math.random() - 0.5) * 80,
-        centerY + (Math.random() - 0.5) * 50,
+        schoolCenter.x + (Math.random() - 0.5) * 80,
+        schoolCenter.y + (Math.random() - 0.5) * 50,
         "common"
       )
     );
@@ -64,16 +59,32 @@ export function createFishSchool(count, centerX, centerY) {
   return fish;
 }
 
-export function createPoisonousFish() {
-  const pos = randomWaterPosition();
+export function createPoisonousFish(centerX, centerY) {
+  const pos = randomPoisonFishPosition(centerX, centerY);
   return new Fish(pos.x, pos.y, "poisonous");
 }
 
-export function respawnFish(fish) {
-  const respawn = randomWaterPosition();
+export function respawnFish(fish, centerX, centerY) {
+  const respawn =
+    fish.type === "poisonous"
+      ? randomPoisonFishPosition(centerX, centerY)
+      : randomCommonFishPosition(centerX, centerY);
+
   fish.x = respawn.x;
   fish.y = respawn.y;
   fish.speedX = (Math.random() - 0.5) * 1.6;
   fish.speedY = (Math.random() - 0.5) * 1.2;
   fish.active = true;
+}
+
+export function recycleDistantFish(fish, centerX, centerY, maxDistance) {
+  if (!fish.active) {
+    return;
+  }
+
+  const dx = fish.x - centerX;
+  const dy = fish.y - centerY;
+  if (dx * dx + dy * dy > maxDistance * maxDistance) {
+    respawnFish(fish, centerX, centerY);
+  }
 }
