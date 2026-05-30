@@ -17,8 +17,11 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 <!-- Add new entries at the top. Format:
 ### [YYYY-MM-DD] — Short title
-1. [prompt-title](prompts/00N-prompt-title.md) — one-line summary
+{number}. [prompt-title](prompts/00N-prompt-title.md) — one-line summary
 -->
+
+### [2026-05-30] — Collision (fish & bomb)
+2. [collision-fish-bomb](prompts/002-collision-fish-bomb.md) — Fish school, bomb hazard, circle collision + eat/damage
 
 ### [2026-05-30] — Player movement (Shark + mouse swim)
 1. [player-movement](prompts/001-player-movement.md) — Shark class, mouse aim, LMB hold to swim forward

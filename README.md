@@ -95,8 +95,7 @@ Prompt details live in [`prompts/`](prompts/). The diary indexes them:
 
 ## Live Demo
 
-<!-- Replace with your GitHub Pages URL once deployed -->
-**GitHub Pages:** _Coming soon_
+**GitHub Pages:** [https://anonimprogrammer.github.io/hungry-shark/](https://anonimprogrammer.github.io/hungry-shark/)
 
 ---
 
@@ -106,8 +105,8 @@ _Game not yet implemented — updated as development progresses._
 
 - [x] Scaffold `index.html`, canvas, and main game loop
 - [ ] Implement `Shark` boost state machine (2× speed on double-click)
-- [ ] Spawn fish schools and poisonous solo fish
-- [ ] Add collision detection and HP / hunger mechanics
+- [x] Spawn fish schools and underwater bomb
+- [x] Add collision detection (shark ↔ fish, shark ↔ bomb)
 - [ ] Game Over screen with survival score
 - [ ] Bomb contact damage (−30 HP)
 - [ ] Tune boost cooldown and spawn rates
