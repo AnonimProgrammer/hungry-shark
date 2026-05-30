@@ -15,6 +15,9 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 ## Entries
 
+### [2026-05-30] — High score (localStorage)
+6. [high-score](prompts/006-high-score.md) — Persist best survival time in localStorage, display on HUD and screens
+
 ### [2026-05-30] — Game restart
 5. [game-restart](prompts/005-game-restart.md) — resetGame(), Play Again button, full state reset without page reload
 

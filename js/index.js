@@ -5,6 +5,8 @@ const gameOverScreen = document.getElementById("game-over-screen");
 const startBtn = document.getElementById("start-btn");
 const restartBtn = document.getElementById("restart-btn");
 const finalScoreEl = document.getElementById("final-score");
+const startHighScoreEl = document.getElementById("start-high-score");
+const gameOverHighScoreEl = document.getElementById("game-over-high-score");
 
 const CANVAS_WIDTH = canvas.width;
 const CANVAS_HEIGHT = canvas.height;
@@ -13,11 +15,13 @@ const SEABED_HEIGHT = 60;
 const BOTTOM_LINE_Y = CANVAS_HEIGHT - SEABED_HEIGHT;
 const HUNGER_LIMIT = 5;
 const STARVATION_DRAIN = 10;
+const HIGH_SCORE_KEY = "hungry-shark-high-score";
 
 const game = {
   state: "start",
   score: 0,
   hungerTimer: 0,
+  highScore: 0,
 };
 
 class Shark {
@@ -231,6 +235,32 @@ const INITIAL_FISH_COUNT = 6;
 const INITIAL_FISH_CENTER = { x: 200, y: 280 };
 const INITIAL_BOMB_POSITION = { x: 620, y: 380 };
 
+function loadHighScore() {
+  const stored = localStorage.getItem(HIGH_SCORE_KEY);
+  return stored !== null ? Number(stored) : 0;
+}
+
+function saveHighScore(score) {
+  localStorage.setItem(HIGH_SCORE_KEY, String(score));
+}
+
+function updateHighScoreDisplay() {
+  const label = `Best: ${game.highScore}s`;
+  startHighScoreEl.textContent = label;
+  gameOverHighScoreEl.textContent = label;
+}
+
+function recordHighScore() {
+  const runScore = Math.floor(game.score);
+
+  if (runScore > game.highScore) {
+    game.highScore = runScore;
+    saveHighScore(runScore);
+  }
+
+  updateHighScoreDisplay();
+}
+
 function drawBackground() {
   ctx.fillStyle = "#b3e5fc";
   ctx.fillRect(0, 0, CANVAS_WIDTH, WATER_SURFACE_Y);
@@ -326,6 +356,7 @@ function resetGame() {
 }
 
 function showGameOverScreen() {
+  recordHighScore();
   finalScoreEl.textContent = `Survived ${Math.floor(game.score)} seconds`;
   gameOverScreen.classList.remove("hidden");
 }
@@ -368,13 +399,15 @@ function drawHud() {
   ctx.textBaseline = "top";
 
   ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
-  ctx.fillRect(8, 8, 168, 72);
+  ctx.fillRect(8, 8, 168, 94);
 
   ctx.fillStyle = "#ffffff";
   ctx.fillText(`HP: ${Math.ceil(shark.hp)}`, 16, 16);
   ctx.fillText(`Score: ${Math.floor(game.score)}s`, 16, 38);
   ctx.fillStyle = isStarving ? "#ff5252" : "#ffffff";
   ctx.fillText(`Hunger: ${game.hungerTimer.toFixed(1)}s`, 16, 60);
+  ctx.fillStyle = "#ffd54f";
+  ctx.fillText(`Best: ${game.highScore}s`, 16, 82);
 }
 
 function render() {
@@ -402,6 +435,8 @@ function gameLoop(timestamp) {
 }
 
 bindInput();
+game.highScore = loadHighScore();
+updateHighScoreDisplay();
 startBtn.addEventListener("click", startGame);
 restartBtn.addEventListener("click", startGame);
 requestAnimationFrame(gameLoop);

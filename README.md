@@ -110,6 +110,7 @@ _Game not yet implemented — updated as development progresses._
 - [x] Add HP / hunger mechanics and survival score
 - [x] Start screen and game over screen
 - [x] Game restart without page refresh
+- [x] High score saved and displayed via localStorage
 - [ ] Tune boost cooldown and spawn rates
 
 ---
