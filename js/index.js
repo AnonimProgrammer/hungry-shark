@@ -15,7 +15,13 @@ const SEABED_HEIGHT = 60;
 const BOTTOM_LINE_Y = CANVAS_HEIGHT - SEABED_HEIGHT;
 const HUNGER_LIMIT = 5;
 const STARVATION_DRAIN = 10;
+const POISON_DAMAGE = 20;
+const BOMB_DAMAGE = 30;
+const BOMB_RESPAWN_DELAY = 5;
+const BOMB_EXPLOSION_DURATION = 0.45;
 const HIGH_SCORE_KEY = "hungry-shark-high-score";
+const SCHOOL_SIZE = 6;
+const POISONOUS_FISH_COUNT = 2;
 
 const game = {
   state: "start",
@@ -54,29 +60,34 @@ class Shark {
   }
 
   draw(ctx) {
-    ctx.save();
-    ctx.translate(this.x, this.y);
-    ctx.rotate(this.angle);
-
-    ctx.fillStyle = this.hitFlash > 0 ? "#ef5350" : "#546e7a";
-    ctx.beginPath();
-    ctx.ellipse(0, 0, this.radius * 1.4, this.radius, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.moveTo(-this.radius * 1.1, 0);
-    ctx.lineTo(-this.radius * 2, -this.radius * 0.55);
-    ctx.lineTo(-this.radius * 2, this.radius * 0.55);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.fillStyle = "#263238";
-    ctx.beginPath();
-    ctx.arc(this.radius * 0.6, -this.radius * 0.25, 3, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.restore();
+    const bodyColor = this.hitFlash > 0 ? "#ef5350" : "#546e7a";
+    drawSharkShape(ctx, this.x, this.y, this.angle, this.radius, bodyColor, 3);
   }
+}
+
+function drawSharkShape(ctx, x, y, angle, radius, bodyColor, eyeRadius = 2) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+
+  ctx.fillStyle = bodyColor;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, radius * 1.4, radius, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(-radius * 1.1, 0);
+  ctx.lineTo(-radius * 2, -radius * 0.55);
+  ctx.lineTo(-radius * 2, radius * 0.55);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = "#263238";
+  ctx.beginPath();
+  ctx.arc(radius * 0.6, -radius * 0.25, eyeRadius, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
 }
 
 class Fish {
@@ -117,10 +128,9 @@ class Fish {
       return;
     }
 
-    ctx.fillStyle = this.type === "common" ? "#ff9800" : "#4caf50";
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fill();
+    const bodyColor = this.type === "common" ? "#ff9800" : "#4caf50";
+    const angle = Math.atan2(this.speedY, this.speedX);
+    drawSharkShape(ctx, this.x, this.y, angle, this.radius, bodyColor, 2);
   }
 }
 
@@ -130,9 +140,44 @@ class Bomb {
     this.y = y;
     this.radius = 16;
     this.active = true;
+    this.exploding = false;
+    this.explosionTimer = 0;
+    this.respawnTimer = 0;
+  }
+
+  explode() {
+    this.active = false;
+    this.exploding = true;
+    this.explosionTimer = BOMB_EXPLOSION_DURATION;
+  }
+
+  update(deltaSec) {
+    if (this.exploding) {
+      this.explosionTimer -= deltaSec;
+      if (this.explosionTimer <= 0) {
+        this.exploding = false;
+        this.respawnTimer = BOMB_RESPAWN_DELAY;
+      }
+      return;
+    }
+
+    if (!this.active && this.respawnTimer > 0) {
+      this.respawnTimer -= deltaSec;
+      if (this.respawnTimer <= 0) {
+        const pos = randomWaterPosition();
+        this.x = pos.x;
+        this.y = pos.y;
+        this.active = true;
+      }
+    }
   }
 
   draw(ctx) {
+    if (this.exploding) {
+      drawBombExplosion(ctx, this.x, this.y, this.explosionTimer);
+      return;
+    }
+
     if (!this.active) {
       return;
     }
@@ -163,6 +208,43 @@ class Bomb {
     ctx.arc(this.x, this.y - this.radius - 4, 4, 0, Math.PI * 2);
     ctx.fill();
   }
+}
+
+function drawBombExplosion(ctx, x, y, timeLeft) {
+  const progress = 1 - timeLeft / BOMB_EXPLOSION_DURATION;
+  const baseRadius = 16 + progress * 48;
+
+  ctx.save();
+  ctx.globalAlpha = 1 - progress * 0.85;
+
+  ctx.fillStyle = "#ffeb3b";
+  ctx.beginPath();
+  ctx.arc(x, y, baseRadius * 0.55, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#ff9800";
+  ctx.beginPath();
+  ctx.arc(x, y, baseRadius * 0.85, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = "#ff5722";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(x, y, baseRadius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  for (let i = 0; i < 10; i++) {
+    const angle = (Math.PI * 2 * i) / 10 + progress * 0.6;
+    const sparkLength = baseRadius * (0.9 + (i % 3) * 0.15);
+    ctx.strokeStyle = i % 2 === 0 ? "#ff5722" : "#ffeb3b";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x + Math.cos(angle) * baseRadius * 0.4, y + Math.sin(angle) * baseRadius * 0.4);
+    ctx.lineTo(x + Math.cos(angle) * sparkLength, y + Math.sin(angle) * sparkLength);
+    ctx.stroke();
+  }
+
+  ctx.restore();
 }
 
 function checkCollision(entityA, entityB) {
@@ -197,6 +279,34 @@ function createFishSchool(count, centerX, centerY) {
   return fish;
 }
 
+function createPoisonousFish() {
+  const pos = randomWaterPosition();
+  return new Fish(pos.x, pos.y, "poisonous");
+}
+
+function respawnFish(fish) {
+  const respawn = randomWaterPosition();
+  fish.x = respawn.x;
+  fish.y = respawn.y;
+  fish.speedX = (Math.random() - 0.5) * 1.6;
+  fish.speedY = (Math.random() - 0.5) * 1.2;
+  fish.active = true;
+}
+
+function createInitialEntities() {
+  const schoolCenter = randomWaterPosition();
+  const fishes = createFishSchool(SCHOOL_SIZE, schoolCenter.x, schoolCenter.y);
+
+  for (let i = 0; i < POISONOUS_FISH_COUNT; i++) {
+    fishes.push(createPoisonousFish());
+  }
+
+  const bombPos = randomWaterPosition();
+  const bomb = new Bomb(bombPos.x, bombPos.y);
+
+  return { fishes, bomb };
+}
+
 const input = {
   mouseX: CANVAS_WIDTH / 2,
   mouseY: CANVAS_HEIGHT / 2,
@@ -228,12 +338,7 @@ function bindInput() {
 }
 
 const shark = new Shark(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-let fishes = createFishSchool(6, 200, 280);
-const bomb = new Bomb(620, 380);
-
-const INITIAL_FISH_COUNT = 6;
-const INITIAL_FISH_CENTER = { x: 200, y: 280 };
-const INITIAL_BOMB_POSITION = { x: 620, y: 380 };
+let { fishes, bomb } = createInitialEntities();
 
 function loadHighScore() {
   const stored = localStorage.getItem(HIGH_SCORE_KEY);
@@ -288,25 +393,22 @@ function handleFishCollisions() {
     if (fish.type === "common") {
       shark.hp = Math.min(100, shark.hp + 5);
       game.hungerTimer = 0;
-      fish.active = false;
-
-      const respawn = randomWaterPosition();
-      fish.x = respawn.x;
-      fish.y = respawn.y;
-      fish.speedX = (Math.random() - 0.5) * 1.6;
-      fish.speedY = (Math.random() - 0.5) * 1.2;
-      fish.active = true;
+    } else if (fish.type === "poisonous") {
+      shark.hp = Math.max(0, shark.hp - POISON_DAMAGE);
+      shark.hitFlash = 12;
     }
+
+    fish.active = false;
+    respawnFish(fish);
   });
 }
 
 function handleBombCollision() {
-  if (!bomb.active || !checkCollision(shark, bomb)) {
-    return;
+  if (bomb.active && checkCollision(shark, bomb)) {
+    shark.hp = Math.max(0, shark.hp - BOMB_DAMAGE);
+    shark.hitFlash = 12;
+    bomb.explode();
   }
-
-  shark.hp = Math.max(0, shark.hp - 30);
-  shark.hitFlash = 12;
 }
 
 function evaluateCollisions() {
@@ -341,15 +443,7 @@ function resetGame() {
   game.score = 0;
   game.hungerTimer = 0;
 
-  fishes = createFishSchool(
-    INITIAL_FISH_COUNT,
-    INITIAL_FISH_CENTER.x,
-    INITIAL_FISH_CENTER.y
-  );
-
-  bomb.x = INITIAL_BOMB_POSITION.x;
-  bomb.y = INITIAL_BOMB_POSITION.y;
-  bomb.active = true;
+  ({ fishes, bomb } = createInitialEntities());
 
   input.isMouseDown = false;
   lastTimestamp = 0;
@@ -378,6 +472,7 @@ function update(deltaSec) {
   }
 
   fishes.forEach((fish) => fish.update());
+  bomb.update(deltaSec);
 
   if (shark.hitFlash > 0) {
     shark.hitFlash -= 1;

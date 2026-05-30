@@ -15,6 +15,12 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 ## Entries
 
+### [2026-05-30] — Bomb explosion + mini-shark fish
+8. [bomb-explosion-fish-visuals](prompts/008-bomb-explosion-fish-visuals.md) — Explosion VFX, 5s bomb respawn, fish drawn as small sharks
+
+### [2026-05-30] — Poisonous fish + spawn randomization
+7. [poisonous-fish](prompts/007-poisonous-fish.md) — Green solo fish (−20 HP on eat), randomized spawns, bomb −30 HP once per contact
+
 ### [2026-05-30] — High score (localStorage)
 6. [high-score](prompts/006-high-score.md) — Persist best survival time in localStorage, display on HUD and screens
 
