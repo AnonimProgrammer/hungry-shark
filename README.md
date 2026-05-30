@@ -135,7 +135,8 @@ _Design spec updated — implementation catching up._
 - [x] Dynamic world with camera follow
 - [ ] **Enhanced rules (design complete)** — see [implementation checklist](docs/project-design.md#7-implementation-gap-checklist)
 - [ ] Fish groups without individual respawn; spawn ahead of shark
-- [ ] Strike-based scoring with 2s chain window
+- [x] Strike-based scoring with 2s chain window
+- [x] Best score persistence migrated to strike points
 - [x] Poison DOT (4s) and status tints (light green / light red)
 - [x] Updated hunger (10s / −5 HP/sec) and light red starving signal
 - [x] HP regen (+10/s after 2s clear of starve/poison/damage)

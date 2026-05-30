@@ -15,6 +15,9 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 ## Entries
 
+### [2026-05-30] — Strike scoring & best score (points)
+15. [strike-score-best-score-points](prompts/015-strike-score-best-score-points.md) — Fish strike chain replaces time score; localStorage best score in points
+
 ### [2026-05-30] — Poison DOT & status tints
 14. [poison-dot-status-tints](prompts/014-poison-dot-status-tints.md) — 20 HP over 4 s DOT, refresh on re-contact, light green / light red shark tints
 

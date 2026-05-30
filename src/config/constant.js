@@ -31,7 +31,10 @@ export const POISON_TICK_RATE = 5;
 export const BOMB_DAMAGE = 30;
 export const BOMB_RESPAWN_DELAY = 5;
 export const BOMB_EXPLOSION_DURATION = 0.45;
-export const HIGH_SCORE_KEY = "hungry-shark-high-score";
+export const HIGH_SCORE_KEY = "hungry-shark-best-score";
+export const STRIKE_BASE_BONUS = 5;
+export const STRIKE_CHAIN_WINDOW = 2;
+export const STRIKE_MULTIPLIER = 2;
 export const SCHOOL_SIZE = 6;
 export const POISONOUS_FISH_COUNT = 2;
 

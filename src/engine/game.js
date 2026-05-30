@@ -8,6 +8,7 @@ import { createInitialEntities, getDefaultSpawnCenter } from "../domain/entities
 import { recycleDistantFish } from "../domain/fish.js";
 import { evaluateCollisions } from "./collision.js";
 import { applyDamage, resetHpState, updateHpRegen } from "./hp.js";
+import { resetStrikeState, updateStrikeChain } from "./score.js";
 import { updateCamera, screenToWorld } from "./camera.js";
 import { render } from "./render.js";
 
@@ -15,6 +16,8 @@ export function createGameState() {
   return {
     state: "start",
     score: 0,
+    strikeChainTimer: 0,
+    lastBonus: 0,
     hungerTimer: 0,
     hpRegenTimer: 0,
     hpLostThisFrame: false,
@@ -32,7 +35,7 @@ function saveHighScore(score) {
 }
 
 export function updateHighScoreDisplay(game, dom) {
-  const label = `Best: ${game.highScore}s`;
+  const label = `Best: ${game.highScore}`;
   dom.startHighScoreEl.textContent = label;
   dom.gameOverHighScoreEl.textContent = label;
 }
@@ -49,9 +52,9 @@ function recordHighScore(game, dom) {
 }
 
 function updateTimers(game, shark, deltaSec) {
-  game.score += deltaSec;
   game.hungerTimer += deltaSec;
   shark.isStarving = isStarving(game.hungerTimer);
+  updateStrikeChain(game, deltaSec);
 
   if (shark.isStarving) {
     applyDamage(shark, game, STARVATION_DRAIN * deltaSec);
@@ -68,7 +71,7 @@ function checkLoseCondition(game, shark, dom) {
 
 function showGameOverScreen(game, dom) {
   recordHighScore(game, dom);
-  dom.finalScoreEl.textContent = `Survived ${Math.floor(game.score)} seconds`;
+  dom.finalScoreEl.textContent = `Score: ${Math.floor(game.score)}`;
   dom.gameOverScreen.classList.remove("hidden");
 }
 
@@ -83,7 +86,7 @@ export function resetGame(game, shark, domain, input) {
   resetHpState(shark, game);
   shark.resetBoost();
 
-  game.score = 0;
+  resetStrikeState(game);
   game.hungerTimer = 0;
 
   const entities = createInitialEntities(spawnCenter);

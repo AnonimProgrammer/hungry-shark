@@ -77,14 +77,15 @@ export function drawHud(ctx, game, shark) {
 
   ctx.fillStyle = "#ffffff";
   ctx.fillText(`HP: ${Math.ceil(shark.hp)}`, 16, 16);
-  ctx.fillText(`Score: ${Math.floor(game.score)}s`, 16, 38);
+  ctx.fillStyle = "#ffd54f";
+  ctx.fillText(`Score: ${Math.floor(game.score)}`, 16, 38);
   ctx.fillStyle = starving ? "#ff5252" : "#ffffff";
   const hungerLabel = starving
     ? "Starving!"
     : `Hunger: ${game.hungerTimer.toFixed(1)}s`;
   ctx.fillText(hungerLabel, 16, 60);
   ctx.fillStyle = "#ffd54f";
-  ctx.fillText(`Best: ${game.highScore}s`, 16, 82);
+  ctx.fillText(`Best: ${game.highScore}`, 16, 82);
 
   drawBoostMeter(ctx, shark, 16, 100);
 }

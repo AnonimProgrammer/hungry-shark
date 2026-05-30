@@ -3,6 +3,7 @@ import {
 } from "../config/constant.js";
 import { respawnFish } from "../domain/fish.js";
 import { applyDamage, applyPoisonContact } from "./hp.js";
+import { awardStrikeOnCommonFishEat } from "./score.js";
 
 export function checkCollision(entityA, entityB) {
   const dx = entityA.x - entityB.x;
@@ -20,6 +21,7 @@ export function handleFishCollisions(shark, fishes, game) {
     if (fish.type === "common") {
       game.hungerTimer = 0;
       shark.isStarving = false;
+      awardStrikeOnCommonFishEat(game);
     } else if (fish.type === "poisonous") {
       applyPoisonContact(shark, game);
     }
