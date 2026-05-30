@@ -17,6 +17,7 @@ export class Shark {
     this.hp = 100;
     this.hitFlash = 0;
     this.isStarving = false;
+    this.poisonTimer = 0;
     this.boostStatus = BOOST_STATES.READY;
     this.boostTimer = 0;
   }

@@ -3,6 +3,7 @@ import {
   BOMB_DAMAGE,
 } from "../config/constant.js";
 import { respawnFish } from "../domain/fish.js";
+import { applyDamage, applyPoisonContact } from "./hp.js";
 
 export function checkCollision(entityA, entityB) {
   const dx = entityA.x - entityB.x;
@@ -21,7 +22,8 @@ export function handleFishCollisions(shark, fishes, game) {
       game.hungerTimer = 0;
       shark.isStarving = false;
     } else if (fish.type === "poisonous") {
-      shark.hp = Math.max(0, shark.hp - POISON_DAMAGE);
+      applyDamage(shark, game, POISON_DAMAGE);
+      applyPoisonContact(shark, game);
       shark.hitFlash = 12;
     }
 
@@ -30,9 +32,9 @@ export function handleFishCollisions(shark, fishes, game) {
   });
 }
 
-export function handleBombCollision(shark, bomb) {
+export function handleBombCollision(shark, bomb, game) {
   if (bomb.active && checkCollision(shark, bomb)) {
-    shark.hp = Math.max(0, shark.hp - BOMB_DAMAGE);
+    applyDamage(shark, game, BOMB_DAMAGE);
     shark.hitFlash = 12;
     bomb.explode();
   }
@@ -40,5 +42,5 @@ export function handleBombCollision(shark, bomb) {
 
 export function evaluateCollisions(shark, fishes, bomb, game) {
   handleFishCollisions(shark, fishes, game);
-  handleBombCollision(shark, bomb);
+  handleBombCollision(shark, bomb, game);
 }

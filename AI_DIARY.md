@@ -15,6 +15,9 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 ## Entries
 
+### [2026-05-30] — HP regeneration (safe-window delay)
+13. [hp-regeneration-safe-window](prompts/013-hp-regeneration-safe-window.md) — +10 HP/s after 2 s clear of starve/poison/damage; shared applyDamage helper
+
 ### [2026-05-30] — Hunger & starvation (enhanced rules)
 12. [hunger-starvation-mechanic](prompts/012-hunger-starvation-mechanic.md) — 10 s grace, −5 HP/s drain, light red shark tint, eat resets hunger only
 

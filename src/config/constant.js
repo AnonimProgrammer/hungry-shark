@@ -22,6 +22,10 @@ export const STARVATION_DRAIN = 5;
 export function isStarving(hungerTimer) {
   return hungerTimer >= HUNGER_LIMIT;
 }
+
+export const HP_REGEN_DELAY = 2;
+export const HP_REGEN_RATE = 10;
+export const POISON_DURATION = 4;
 export const POISON_DAMAGE = 20;
 export const BOMB_DAMAGE = 30;
 export const BOMB_RESPAWN_DELAY = 5;

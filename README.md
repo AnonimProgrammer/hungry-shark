@@ -138,7 +138,7 @@ _Design spec updated — implementation catching up._
 - [ ] Strike-based scoring with 2s chain window
 - [ ] Poison DOT (4s) and status tints (light green)
 - [x] Updated hunger (10s / −5 HP/sec) and light red starving signal
-- [ ] HP regen (+10/s after 2s clear of starve/poison/damage)
+- [x] HP regen (+10/s after 2s clear of starve/poison/damage)
 - [ ] Boost meter drain/regen (2s delay, 10s refill, stoppable)
 - [ ] Top-right HUD bars + settings menu; best score off HUD only (keep on start/game-over)
 

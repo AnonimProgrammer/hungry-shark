@@ -7,6 +7,7 @@ import {
 import { createInitialEntities, getDefaultSpawnCenter } from "../domain/entities.js";
 import { recycleDistantFish } from "../domain/fish.js";
 import { evaluateCollisions } from "./collision.js";
+import { applyDamage, resetHpState, updateHpRegen } from "./hp.js";
 import { updateCamera, screenToWorld } from "./camera.js";
 import { render } from "./render.js";
 
@@ -15,6 +16,8 @@ export function createGameState() {
     state: "start",
     score: 0,
     hungerTimer: 0,
+    hpRegenTimer: 0,
+    hpLostThisFrame: false,
     highScore: 0,
   };
 }
@@ -51,7 +54,7 @@ function updateTimers(game, shark, deltaSec) {
   shark.isStarving = isStarving(game.hungerTimer);
 
   if (shark.isStarving) {
-    shark.hp = Math.max(0, shark.hp - STARVATION_DRAIN * deltaSec);
+    applyDamage(shark, game, STARVATION_DRAIN * deltaSec);
   }
 }
 
@@ -77,6 +80,7 @@ export function resetGame(game, shark, domain, input) {
   shark.hp = 100;
   shark.hitFlash = 0;
   shark.isStarving = false;
+  resetHpState(shark, game);
   shark.resetBoost();
 
   game.score = 0;
@@ -101,6 +105,7 @@ export function startGame(game, shark, domain, input, dom) {
 }
 
 function update(game, shark, domain, input, dom, deltaSec) {
+  game.hpLostThisFrame = false;
   updateTimers(game, shark, deltaSec);
 
   const worldMouse = screenToWorld(domain.camera, input.mouseX, input.mouseY);
@@ -130,6 +135,7 @@ function update(game, shark, domain, input, dom, deltaSec) {
   updateCamera(domain.camera, shark.x, shark.y);
 
   evaluateCollisions(shark, domain.fishes, domain.bomb, game);
+  updateHpRegen(game, shark, deltaSec);
   checkLoseCondition(game, shark, dom);
 }
 
