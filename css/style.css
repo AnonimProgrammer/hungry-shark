@@ -1,0 +1,23 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a2e;
+}
+
+#game-container {
+  line-height: 0;
+}
+
+#game-canvas {
+  display: block;
+  border: 2px solid #16213e;
+  background: #87ceeb;
+}

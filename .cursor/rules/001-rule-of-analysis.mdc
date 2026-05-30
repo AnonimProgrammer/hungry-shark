@@ -1,0 +1,32 @@
+---
+description: Require project analysis before any work — prioritize docs/ and spec folders
+alwaysApply: true
+---
+
+# Rule of Analysis
+
+Before answering, planning, or writing code, analyze the project. Do not assume structure, conventions, or requirements from memory.
+
+## Required first steps
+
+1. **Scan the repo layout** — list top-level folders and key files (`README`, `package.json`, config files).
+2. **Read documentation first** — especially:
+   - `docs/` (all subfolders and files)
+   - `project-design.md`, `README.md`, `DESIGN.md`, `SPEC.md`, or similar at repo root
+   - Any `*.md` in `docs/`, `design/`, `spec/`, or `.cursor/rules/`
+3. **Map docs to code** — after reading docs, locate the files/folders they describe before making changes.
+4. **State gaps** — if docs conflict with code or are missing, say so before proceeding.
+
+## Priority order
+
+```
+docs/  →  root specs (project-design.md, README)  →  .cursor/rules/  →  source code
+```
+
+When `docs/` exists, treat it as the primary source of truth over guesses or generic patterns.
+
+## When to skip deep analysis
+
+Only skip if the user asks a narrow question about a file they already have open and explicitly scoped (e.g. "explain line 42 of this file").
+
+Otherwise: read relevant docs every session, even for small tasks.
