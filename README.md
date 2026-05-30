@@ -127,7 +127,10 @@ hungry-shark/
 ├── index.html
 ├── css/
 │   └── style.css
-├── js/
+├── src/
+│   ├── config/
+│   ├── domain/
+│   ├── engine/
 │   └── index.js
 └── README.md
 ```
