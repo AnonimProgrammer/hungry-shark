@@ -6,6 +6,10 @@ A browser-based 2D underwater survival game: control a shark in an unbounded oce
 
 **GitHub Pages:** [https://anonimprogrammer.github.io/hungry-shark/](https://anonimprogrammer.github.io/hungry-shark/)
 
+## Project tracking
+
+- [Jira (SI)](https://anonimprogrammer.atlassian.net/jira/software/projects/SI/boards/68) — backlog and issues for this project.
+
 ## AI development log
 
 Feature prompts and iteration notes are indexed in **[AI_DIARY.md](AI_DIARY.md)** (detailed prompt files under [`prompts/`](prompts/)).
@@ -37,5 +41,3 @@ Design targets in [Project Design](docs/project-design.md) are ahead of code in 
 - **Boost meter** — drain only while boosting, 2 s idle before regen, 10 s empty→full refill (replace fixed burst/cooldown).
 - **HUD** — top-right HP/boost bars and settings menu; best score off in-game HUD only (start/game-over unchanged).
 - **Future gameplay** — humans at the surface, aggressive predator fish (see [introduction](docs/introduction.md)).
-
-Ironhack bootcamp — individual project.
