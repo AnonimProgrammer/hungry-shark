@@ -107,8 +107,8 @@ _Game not yet implemented — updated as development progresses._
 - [ ] Implement `Shark` boost state machine (2× speed on double-click)
 - [x] Spawn fish schools and underwater bomb
 - [x] Add collision detection (shark ↔ fish, shark ↔ bomb)
-- [ ] Game Over screen with survival score
-- [ ] Bomb contact damage (−30 HP)
+- [x] Add HP / hunger mechanics and survival score
+- [ ] Game Over screen with restart (next milestone)
 - [ ] Tune boost cooldown and spawn rates
 
 ---

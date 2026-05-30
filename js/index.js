@@ -6,6 +6,14 @@ const CANVAS_HEIGHT = canvas.height;
 const WATER_SURFACE_Y = 80;
 const SEABED_HEIGHT = 60;
 const BOTTOM_LINE_Y = CANVAS_HEIGHT - SEABED_HEIGHT;
+const HUNGER_LIMIT = 5;
+const STARVATION_DRAIN = 10;
+
+const game = {
+  state: "playing",
+  score: 0,
+  hungerTimer: 0,
+};
 
 class Shark {
   constructor(x, y) {
@@ -240,6 +248,7 @@ function handleFishCollisions() {
 
     if (fish.type === "common") {
       shark.hp = Math.min(100, shark.hp + 5);
+      game.hungerTimer = 0;
       fish.active = false;
 
       const respawn = randomWaterPosition();
@@ -266,7 +275,25 @@ function evaluateCollisions() {
   handleBombCollision();
 }
 
-function update() {
+function updateTimers(deltaSec) {
+  game.score += deltaSec;
+  game.hungerTimer += deltaSec;
+
+  if (game.hungerTimer >= HUNGER_LIMIT) {
+    shark.hp = Math.max(0, shark.hp - STARVATION_DRAIN * deltaSec);
+  }
+}
+
+function checkLoseCondition() {
+  if (shark.hp <= 0) {
+    shark.hp = 0;
+    game.state = "gameOver";
+  }
+}
+
+function update(deltaSec) {
+  updateTimers(deltaSec);
+
   shark.rotateToward(input.mouseX, input.mouseY);
 
   if (input.isMouseDown) {
@@ -280,6 +307,42 @@ function update() {
   }
 
   evaluateCollisions();
+  checkLoseCondition();
+}
+
+function drawHud() {
+  const isStarving = game.hungerTimer >= HUNGER_LIMIT;
+
+  ctx.font = "16px sans-serif";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+
+  ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+  ctx.fillRect(8, 8, 168, 72);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(`HP: ${Math.ceil(shark.hp)}`, 16, 16);
+  ctx.fillText(`Score: ${Math.floor(game.score)}s`, 16, 38);
+  ctx.fillStyle = isStarving ? "#ff5252" : "#ffffff";
+  ctx.fillText(`Hunger: ${game.hungerTimer.toFixed(1)}s`, 16, 60);
+}
+
+function drawGameOverOverlay() {
+  ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 36px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("Game Over", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 24);
+
+  ctx.font = "20px sans-serif";
+  ctx.fillText(
+    `Survived ${Math.floor(game.score)} seconds`,
+    CANVAS_WIDTH / 2,
+    CANVAS_HEIGHT / 2 + 20
+  );
 }
 
 function render() {
@@ -289,13 +352,26 @@ function render() {
   fishes.forEach((fish) => fish.draw(ctx));
   bomb.draw(ctx);
   shark.draw(ctx);
+  drawHud();
+
+  if (game.state === "gameOver") {
+    drawGameOverOverlay();
+  }
 }
 
-function gameLoop() {
-  update();
+let lastTimestamp = 0;
+
+function gameLoop(timestamp) {
+  const deltaSec = lastTimestamp ? (timestamp - lastTimestamp) / 1000 : 0;
+  lastTimestamp = timestamp;
+
+  if (game.state === "playing") {
+    update(deltaSec);
+  }
+
   render();
   requestAnimationFrame(gameLoop);
 }
 
 bindInput();
-gameLoop();
+requestAnimationFrame(gameLoop);

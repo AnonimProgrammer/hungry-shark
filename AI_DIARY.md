@@ -17,8 +17,11 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 <!-- Add new entries at the top. Format:
 ### [YYYY-MM-DD] — Short title
-{number}. [prompt-title](prompts/00N-prompt-title.md) — one-line summary
+{order number (e.g. 1, 2, 3 ...)}. [prompt-title](prompts/00N-prompt-title.md) — one-line summary
 -->
+
+### [2026-05-30] — Score & lose condition
+3. [score-lose](prompts/003-score-lose.md) — Survival score, starvation drain, HUD, game-over when HP = 0
 
 ### [2026-05-30] — Collision (fish & bomb)
 2. [collision-fish-bomb](prompts/002-collision-fish-bomb.md) — Fish school, bomb hazard, circle collision + eat/damage
