@@ -104,7 +104,7 @@ Prompt details live in [`prompts/`](prompts/). The diary indexes them:
 _Game not yet implemented — updated as development progresses._
 
 - [x] Scaffold `index.html`, canvas, and main game loop
-- [ ] Implement `Shark` boost state machine (2× speed on double-click)
+- [x] Implement `Shark` boost state machine (2× speed on double-click)
 - [x] Spawn fish schools and underwater bomb
 - [x] Add collision detection (shark ↔ fish, shark ↔ bomb)
 - [x] Add HP / hunger mechanics and survival score

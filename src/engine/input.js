@@ -5,6 +5,7 @@ export function createInputState() {
     mouseX: CANVAS_WIDTH / 2,
     mouseY: CANVAS_HEIGHT / 2,
     isMouseDown: false,
+    doubleClicked: false,
   };
 }
 
@@ -20,6 +21,9 @@ export function bindInput(canvas, input, getGameState) {
   canvas.addEventListener("mousedown", (event) => {
     if (event.button === 0 && getGameState() === "playing") {
       input.isMouseDown = true;
+      if (event.detail >= 2) {
+        input.doubleClicked = true;
+      }
     }
   });
 

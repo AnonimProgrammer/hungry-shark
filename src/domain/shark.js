@@ -2,6 +2,10 @@ import {
   CANVAS_WIDTH,
   WATER_SURFACE_Y,
   BOTTOM_LINE_Y,
+  BOOST_MULTIPLIER,
+  BOOST_DURATION,
+  BOOST_COOLDOWN,
+  BOOST_STATES,
 } from "../config/constant.js";
 import { drawSharkShape } from "./drawing.js";
 
@@ -14,6 +18,45 @@ export class Shark {
     this.baseSpeed = 3;
     this.hp = 100;
     this.hitFlash = 0;
+    this.boostStatus = BOOST_STATES.READY;
+    this.boostTimer = 0;
+  }
+
+  getSpeed() {
+    if (this.boostStatus === BOOST_STATES.ACTIVE) {
+      return this.baseSpeed * BOOST_MULTIPLIER;
+    }
+    return this.baseSpeed;
+  }
+
+  tryActivateBoost() {
+    if (this.boostStatus !== BOOST_STATES.READY) {
+      return false;
+    }
+    this.boostStatus = BOOST_STATES.ACTIVE;
+    this.boostTimer = BOOST_DURATION;
+    return true;
+  }
+
+  updateBoost(deltaSec) {
+    if (this.boostStatus === BOOST_STATES.ACTIVE) {
+      this.boostTimer -= deltaSec;
+      if (this.boostTimer <= 0) {
+        this.boostStatus = BOOST_STATES.COOLDOWN;
+        this.boostTimer = BOOST_COOLDOWN;
+      }
+    } else if (this.boostStatus === BOOST_STATES.COOLDOWN) {
+      this.boostTimer -= deltaSec;
+      if (this.boostTimer <= 0) {
+        this.boostStatus = BOOST_STATES.READY;
+        this.boostTimer = 0;
+      }
+    }
+  }
+
+  resetBoost() {
+    this.boostStatus = BOOST_STATES.READY;
+    this.boostTimer = 0;
   }
 
   rotateToward(targetX, targetY) {

@@ -74,6 +74,7 @@ export function resetGame(game, shark, domain, input) {
   shark.angle = 0;
   shark.hp = 100;
   shark.hitFlash = 0;
+  shark.resetBoost();
 
   game.score = 0;
   game.hungerTimer = 0;
@@ -83,6 +84,7 @@ export function resetGame(game, shark, domain, input) {
   domain.bomb = entities.bomb;
 
   input.isMouseDown = false;
+  input.doubleClicked = false;
   domain.lastTimestamp = 0;
 }
 
@@ -98,8 +100,15 @@ function update(game, shark, domain, input, dom, deltaSec) {
 
   shark.rotateToward(input.mouseX, input.mouseY);
 
+  if (input.doubleClicked) {
+    shark.tryActivateBoost();
+    input.doubleClicked = false;
+  }
+
+  shark.updateBoost(deltaSec);
+
   if (input.isMouseDown) {
-    shark.moveForward(shark.baseSpeed);
+    shark.moveForward(shark.getSpeed());
   }
 
   domain.fishes.forEach((fish) => fish.update());

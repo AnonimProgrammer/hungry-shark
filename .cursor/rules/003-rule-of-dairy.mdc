@@ -1,0 +1,49 @@
+---
+description: Update AI_DIARY.md and prompts/ when a new feature is requested — skip polish and explicit opt-out
+alwaysApply: true
+---
+
+# Rule of Diary
+
+After completing work on a user prompt, update the AI diary unless an exception below applies.
+
+## When to add an entry
+
+Add a new diary entry when the prompt requests a **new feature** or **new capability** not already covered by an existing entry in `AI_DIARY.md`.
+
+1. Create `prompts/NNN-short-kebab-title.md` (next zero-padded number in sequence).
+2. Fill in the prompt file using the template in `AI_DIARY.md`.
+3. Add a dated line to **Entries** in `AI_DIARY.md` linking to that file.
+
+Do this as part of the same task — do not leave it for the user to do later.
+
+## When to skip
+
+| Situation | Action |
+|-----------|--------|
+| User says **skip diary**, **don't update diary**, or similar | Do not add an entry |
+| Prompt **polishes** an existing feature (bug fix, tweak, refactor, styling, performance) already logged in the diary | Do not add a new entry |
+| Question-only, explanation, or review with no code changes | Do not add an entry |
+
+## Feature vs polish
+
+**New feature** — add an entry:
+
+- "Add a power-up system"
+- "Implement high score with localStorage"
+- "Add poisonous fish that drain HP"
+
+**Polish** — skip a new entry:
+
+- "Make the bomb explosion bigger"
+- "Fix fish spawning off-screen"
+- "Tweak shark swim speed"
+- "Refactor collision into a helper"
+
+When unsure, check `AI_DIARY.md` **Entries**: if the work extends an existing feature already listed there, treat it as polish and skip.
+
+## Reference
+
+- Index: `AI_DIARY.md`
+- Prompt files: `prompts/NNN-short-kebab-title.md`
+- Format guide: `prompts/example-prompt.md`

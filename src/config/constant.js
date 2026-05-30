@@ -13,3 +13,13 @@ export const BOMB_EXPLOSION_DURATION = 0.45;
 export const HIGH_SCORE_KEY = "hungry-shark-high-score";
 export const SCHOOL_SIZE = 6;
 export const POISONOUS_FISH_COUNT = 2;
+
+export const BOOST_MULTIPLIER = 2;
+export const BOOST_DURATION = 2.5;
+export const BOOST_COOLDOWN = 5;
+
+export const BOOST_STATES = {
+  READY: "READY",
+  ACTIVE: "ACTIVE",
+  COOLDOWN: "COOLDOWN",
+};

@@ -15,6 +15,9 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 ## Entries
 
+### [2026-05-30] — Shark boost (double-click)
+9. [shark-boost-double-click](prompts/009-shark-boost-double-click.md) — 2× speed burst on double-click, boost state machine, HUD meter
+
 ### [2026-05-30] — Bomb explosion + mini-shark fish
 8. [bomb-explosion-fish-visuals](prompts/008-bomb-explosion-fish-visuals.md) — Explosion VFX, 5s bomb respawn, fish drawn as small sharks
 

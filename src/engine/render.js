@@ -5,6 +5,9 @@ import {
   SEABED_HEIGHT,
   BOTTOM_LINE_Y,
   HUNGER_LIMIT,
+  BOOST_DURATION,
+  BOOST_COOLDOWN,
+  BOOST_STATES,
 } from "../config/constant.js";
 
 export function drawBackground(ctx) {
@@ -37,7 +40,7 @@ export function drawHud(ctx, game, shark) {
   ctx.textBaseline = "top";
 
   ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
-  ctx.fillRect(8, 8, 168, 94);
+  ctx.fillRect(8, 8, 168, 118);
 
   ctx.fillStyle = "#ffffff";
   ctx.fillText(`HP: ${Math.ceil(shark.hp)}`, 16, 16);
@@ -46,6 +49,40 @@ export function drawHud(ctx, game, shark) {
   ctx.fillText(`Hunger: ${game.hungerTimer.toFixed(1)}s`, 16, 60);
   ctx.fillStyle = "#ffd54f";
   ctx.fillText(`Best: ${game.highScore}s`, 16, 82);
+
+  drawBoostMeter(ctx, shark, 16, 100);
+}
+
+function drawBoostMeter(ctx, shark, x, y) {
+  const barWidth = 140;
+  const barHeight = 10;
+
+  let label;
+  let fillRatio;
+  let fillColor;
+
+  if (shark.boostStatus === BOOST_STATES.ACTIVE) {
+    label = "Boost: ACTIVE";
+    fillRatio = shark.boostTimer / BOOST_DURATION;
+    fillColor = "#76ff03";
+  } else if (shark.boostStatus === BOOST_STATES.COOLDOWN) {
+    label = "Boost: cooldown";
+    fillRatio = 1 - shark.boostTimer / BOOST_COOLDOWN;
+    fillColor = "#ff9100";
+  } else {
+    label = "Boost: ready (dbl-click)";
+    fillRatio = 1;
+    fillColor = "#69f0ae";
+  }
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(label, x, y);
+
+  const barY = y + 18;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+  ctx.fillRect(x, barY, barWidth, barHeight);
+  ctx.fillStyle = fillColor;
+  ctx.fillRect(x, barY, barWidth * fillRatio, barHeight);
 }
 
 export function render(ctx, game, shark, fishes, bomb) {
