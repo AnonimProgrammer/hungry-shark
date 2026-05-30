@@ -1,5 +1,4 @@
 import {
-  POISON_DAMAGE,
   BOMB_DAMAGE,
 } from "../config/constant.js";
 import { respawnFish } from "../domain/fish.js";
@@ -22,9 +21,7 @@ export function handleFishCollisions(shark, fishes, game) {
       game.hungerTimer = 0;
       shark.isStarving = false;
     } else if (fish.type === "poisonous") {
-      applyDamage(shark, game, POISON_DAMAGE);
       applyPoisonContact(shark, game);
-      shark.hitFlash = 12;
     }
 
     fish.active = false;

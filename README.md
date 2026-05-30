@@ -136,7 +136,7 @@ _Design spec updated — implementation catching up._
 - [ ] **Enhanced rules (design complete)** — see [implementation checklist](docs/project-design.md#7-implementation-gap-checklist)
 - [ ] Fish groups without individual respawn; spawn ahead of shark
 - [ ] Strike-based scoring with 2s chain window
-- [ ] Poison DOT (4s) and status tints (light green)
+- [x] Poison DOT (4s) and status tints (light green / light red)
 - [x] Updated hunger (10s / −5 HP/sec) and light red starving signal
 - [x] HP regen (+10/s after 2s clear of starve/poison/damage)
 - [ ] Boost meter drain/regen (2s delay, 10s refill, stoppable)

@@ -15,6 +15,9 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 ## Entries
 
+### [2026-05-30] — Poison DOT & status tints
+14. [poison-dot-status-tints](prompts/014-poison-dot-status-tints.md) — 20 HP over 4 s DOT, refresh on re-contact, light green / light red shark tints
+
 ### [2026-05-30] — HP regeneration (safe-window delay)
 13. [hp-regeneration-safe-window](prompts/013-hp-regeneration-safe-window.md) — +10 HP/s after 2 s clear of starve/poison/damage; shared applyDamage helper
 

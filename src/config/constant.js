@@ -27,6 +27,7 @@ export const HP_REGEN_DELAY = 2;
 export const HP_REGEN_RATE = 10;
 export const POISON_DURATION = 4;
 export const POISON_DAMAGE = 20;
+export const POISON_TICK_RATE = 5;
 export const BOMB_DAMAGE = 30;
 export const BOMB_RESPAWN_DELAY = 5;
 export const BOMB_EXPLOSION_DURATION = 0.45;

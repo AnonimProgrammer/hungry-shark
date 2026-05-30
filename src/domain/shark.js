@@ -17,7 +17,9 @@ export class Shark {
     this.hp = 100;
     this.hitFlash = 0;
     this.isStarving = false;
+    this.isPoisoned = false;
     this.poisonTimer = 0;
+    this.poisonDamageRemaining = 0;
     this.boostStatus = BOOST_STATES.READY;
     this.boostTimer = 0;
   }
@@ -80,6 +82,8 @@ export class Shark {
     let bodyColor = "#546e7a";
     if (this.hitFlash > 0) {
       bodyColor = "#ef5350";
+    } else if (this.isPoisoned) {
+      bodyColor = "#a5d6a7";
     } else if (this.isStarving) {
       bodyColor = "#ef9a9a";
     }
