@@ -33,9 +33,18 @@ export const BOMB_RESPAWN_DELAY = 5;
 export const BOMB_EXPLOSION_DURATION = 0.45;
 export const HIGH_SCORE_KEY = "hungry-shark-best-score";
 export const STRIKE_BASE_BONUS = 5;
+export const STRIKE_MAX_BONUS = 80;
 export const STRIKE_CHAIN_WINDOW = 2;
 export const STRIKE_MULTIPLIER = 2;
-export const SCHOOL_SIZE = 6;
+export const SCHOOL_SIZE = 12;
+export const MIN_ACTIVE_GROUPS = 2;
+export const MAX_ACTIVE_GROUPS = 6;
+/** Groups with this many fish or fewer are treated as eaten (no longer active). */
+export const GROUP_DEPLETED_THRESHOLD = 3;
+export const GROUP_SPAWN_INTERVAL = 2;
+export const GROUP_SPAWN_AHEAD_MIN = 900;
+export const GROUP_SPAWN_AHEAD_MAX = 1500;
+export const GROUP_SPAWN_ANGLE_SPREAD = 0.75;
 export const POISONOUS_FISH_COUNT = 2;
 
 export const BOOST_MULTIPLIER = 2;

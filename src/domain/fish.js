@@ -1,18 +1,18 @@
 import { drawSharkShape } from "./drawing.js";
 import {
-  randomCommonFishPosition,
   randomPoisonFishPosition,
   getFishVerticalBounds,
 } from "./spawn.js";
 
 export class Fish {
-  constructor(x, y, type = "common") {
+  constructor(x, y, type = "common", groupId = null) {
     this.x = x;
     this.y = y;
     this.radius = 10;
     this.type = type;
-    this.speedX = (Math.random() - 0.5) * 1.6;
-    this.speedY = (Math.random() - 0.5) * 1.2;
+    this.groupId = groupId;
+    this.speedX = (Math.random() - 0.5) * (type === "common" ? 0.9 : 1.6);
+    this.speedY = (Math.random() - 0.5) * (type === "common" ? 0.7 : 1.2);
     this.active = true;
   }
 
@@ -43,19 +43,20 @@ export class Fish {
   }
 }
 
-export function createFishSchool(count, centerX, centerY) {
+export function createFishSchool(count, anchorX, anchorY, groupId) {
   const fish = [];
-  const schoolCenter = randomCommonFishPosition(centerX, centerY);
 
   for (let i = 0; i < count; i++) {
     fish.push(
       new Fish(
-        schoolCenter.x + (Math.random() - 0.5) * 80,
-        schoolCenter.y + (Math.random() - 0.5) * 50,
-        "common"
+        anchorX + (Math.random() - 0.5) * 80,
+        anchorY + (Math.random() - 0.5) * 50,
+        "common",
+        groupId
       )
     );
   }
+
   return fish;
 }
 
@@ -64,11 +65,8 @@ export function createPoisonousFish(centerX, centerY) {
   return new Fish(pos.x, pos.y, "poisonous");
 }
 
-export function respawnFish(fish, centerX, centerY) {
-  const respawn =
-    fish.type === "poisonous"
-      ? randomPoisonFishPosition(centerX, centerY)
-      : randomCommonFishPosition(centerX, centerY);
+export function respawnPoisonFish(fish, centerX, centerY) {
+  const respawn = randomPoisonFishPosition(centerX, centerY);
 
   fish.x = respawn.x;
   fish.y = respawn.y;
@@ -77,14 +75,14 @@ export function respawnFish(fish, centerX, centerY) {
   fish.active = true;
 }
 
-export function recycleDistantFish(fish, centerX, centerY, maxDistance) {
-  if (!fish.active) {
+export function recycleDistantPoisonFish(fish, centerX, centerY, maxDistance) {
+  if (!fish.active || fish.type !== "poisonous") {
     return;
   }
 
   const dx = fish.x - centerX;
   const dy = fish.y - centerY;
   if (dx * dx + dy * dy > maxDistance * maxDistance) {
-    respawnFish(fish, centerX, centerY);
+    respawnPoisonFish(fish, centerX, centerY);
   }
 }

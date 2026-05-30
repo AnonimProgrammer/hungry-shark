@@ -5,7 +5,8 @@ import {
   isStarving,
 } from "../config/constant.js";
 import { createInitialEntities, getDefaultSpawnCenter } from "../domain/entities.js";
-import { recycleDistantFish } from "../domain/fish.js";
+import { maintainFishGroups } from "../domain/fishGroups.js";
+import { recycleDistantPoisonFish } from "../domain/fish.js";
 import { evaluateCollisions } from "./collision.js";
 import { applyDamage, resetHpState, updateHpRegen } from "./hp.js";
 import { resetStrikeState, updateStrikeChain } from "./score.js";
@@ -88,10 +89,14 @@ export function resetGame(game, shark, domain, input) {
 
   resetStrikeState(game);
   game.hungerTimer = 0;
+  shark.lastDirX = Math.cos(shark.angle);
+  shark.lastDirY = Math.sin(shark.angle);
 
-  const entities = createInitialEntities(spawnCenter);
+  const entities = createInitialEntities(shark, spawnCenter);
   domain.fishes = entities.fishes;
   domain.bomb = entities.bomb;
+  domain.nextGroupId = entities.nextGroupId;
+  domain.groupSpawnTimer = 0;
 
   updateCamera(domain.camera, shark.x, shark.y);
 
@@ -127,8 +132,9 @@ function update(game, shark, domain, input, dom, deltaSec) {
 
   domain.fishes.forEach((fish) => {
     fish.update();
-    recycleDistantFish(fish, shark.x, shark.y, ENTITY_RECYCLE_DISTANCE);
+    recycleDistantPoisonFish(fish, shark.x, shark.y, ENTITY_RECYCLE_DISTANCE);
   });
+  maintainFishGroups(shark, domain.fishes, domain, deltaSec);
   domain.bomb.update(deltaSec, shark.x, shark.y);
 
   if (shark.hitFlash > 0) {

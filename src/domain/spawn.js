@@ -6,6 +6,9 @@ import {
   SEABED_HAZARD_CLEARANCE_MAX,
   WATER_COLUMN_HEIGHT,
   SPAWN_SPREAD_X,
+  GROUP_SPAWN_AHEAD_MIN,
+  GROUP_SPAWN_AHEAD_MAX,
+  GROUP_SPAWN_ANGLE_SPREAD,
 } from "../config/constant.js";
 
 const WATER_BOUNDS = {
@@ -86,4 +89,33 @@ export function getFishVerticalBounds(radius, type = "common") {
 
 export function getDefaultSpawnCenterY() {
   return WATER_SURFACE_Y + WATER_COLUMN_HEIGHT * 0.35;
+}
+
+function getSharkForward(shark) {
+  const len = Math.hypot(shark.lastDirX, shark.lastDirY);
+  if (len > 0.01) {
+    return { x: shark.lastDirX / len, y: shark.lastDirY / len };
+  }
+
+  return { x: Math.cos(shark.angle), y: Math.sin(shark.angle) };
+}
+
+export function getGroupSpawnAnchor(shark, spawnIndex = 0, totalSpawns = 1) {
+  const bounds = getWaterBounds();
+  const forward = getSharkForward(shark);
+  const baseAngle = Math.atan2(forward.y, forward.x);
+  const center = (totalSpawns - 1) / 2;
+  const spreadAngle = (spawnIndex - center) * GROUP_SPAWN_ANGLE_SPREAD;
+  const angle = baseAngle + spreadAngle;
+  const distance =
+    GROUP_SPAWN_AHEAD_MIN +
+    Math.random() * (GROUP_SPAWN_AHEAD_MAX - GROUP_SPAWN_AHEAD_MIN);
+
+  const minY = bounds.fishMinY + 10;
+  const maxY = Math.min(bounds.commonFishMaxY, bounds.fishMaxY) - 10;
+
+  return {
+    x: shark.x + Math.cos(angle) * distance,
+    y: Math.max(minY, Math.min(maxY, shark.y + Math.sin(angle) * distance)),
+  };
 }

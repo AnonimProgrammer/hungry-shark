@@ -6,6 +6,6 @@
 
 **What was wrong:** Nothing broken — old `hungry-shark-high-score` key left in localStorage unused (intentional clean break from second-based records).
 
-**How I fixed it:** N/A.
+**How I fixed it:** N/A. Later: per-fish strike cap at 80 (5 → 10 → 20 → 40 → 80).
 
 **Time lost:** ~0 minutes

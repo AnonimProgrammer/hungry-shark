@@ -18,6 +18,8 @@ export class Shark {
     this.hitFlash = 0;
     this.isStarving = false;
     this.isPoisoned = false;
+    this.lastDirX = 1;
+    this.lastDirY = 0;
     this.poisonTimer = 0;
     this.poisonDamageRemaining = 0;
     this.boostStatus = BOOST_STATES.READY;
@@ -66,8 +68,10 @@ export class Shark {
   }
 
   moveForward(speed) {
-    this.x += Math.cos(this.angle) * speed;
-    this.y += Math.sin(this.angle) * speed;
+    this.lastDirX = Math.cos(this.angle);
+    this.lastDirY = Math.sin(this.angle);
+    this.x += this.lastDirX * speed;
+    this.y += this.lastDirY * speed;
     this.applyWorldPhysics();
   }
 

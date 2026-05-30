@@ -16,7 +16,7 @@ Blueprint for a browser-based, 2D underwater survival game built strictly with *
 | **Poisonous fish** | Instant −20 HP on contact | **20 HP over 4 seconds** (DOT); shark **light green** while poisoned |
 | **Hunger** | 5 s without food → −10 HP/s | **10 s** without food → **−5 HP/s**; shark **light red** while starving |
 | **HP recovery** | +5 HP instantly on eating common fish | **No instant heal**; regen **+10 HP/s** after **2 s** clear of starvation, poison, and damage (cap 100) |
-| **Score** | Time-based (`+deltaSec` every frame) | **Fish strike chain** — base +5, each next fish within 2 s doubles previous bonus |
+| **Score** | Time-based (`+deltaSec` every frame) | **Fish strike chain** — 5, 10, 20, 40, 80 max per fish (2× within 2 s, capped at 80) |
 | **Boost** | Fixed 2.5 s burst + 5 s cooldown; cannot stop early | **Meter-based** — drains while active, **stops when not boosting**; regen after **2 s idle**, **10 s** empty→full |
 | **HUD** | Top-left text (HP number, hunger timer, best score) | **Top-right** bars (HP red, boost dark blue), golden score, settings menu |
 | **Best score** | Shown on HUD + start/game-over screens + localStorage | **Removed from in-game HUD only**; kept on start/game-over screens (localStorage persists best strike score) |
@@ -245,27 +245,21 @@ Score is **not** time-based. Points come **only** from eating common fish.
 | Rule | Value |
 |------|-------|
 | Base bonus (first fish in chain) | **+5** points |
-| Chain multiplier | Each consecutive fish eaten **within the chain window** awards **2× the previous fish’s bonus** |
-| Chain window | **2 seconds** — timer resets on each eat; if it expires with no eat, chain resets to base |
-| Example (rapid 8-fish school hunt) | 5 → 10 → 20 → 40 → 80 → 160 → 320 → 640 |
+| Chain multiplier | Each consecutive fish within **2 s** doubles the previous bonus |
+| Per-fish cap | **+80** maximum (sequence: 5 → 10 → 20 → 40 → 80 → 80 …) |
+| Chain window | **2 seconds** — timer resets on each eat; if it expires, chain resets to +5 |
 
 **Pseudocode:**
 
 ```
 onEatCommonFish():
   if strikeChainTimer > 0:
-    bonus = lastBonus * 2
+    bonus = min(80, lastBonus * 2)
   else:
-    bonus = STRIKE_BASE_BONUS   // 5
+    bonus = 5
   score += bonus
   lastBonus = bonus
-  strikeChainTimer = STRIKE_CHAIN_WINDOW   // 2.0 s
-
-eachFrame(deltaSec):
-  if strikeChainTimer > 0:
-    strikeChainTimer -= deltaSec
-    if strikeChainTimer <= 0:
-      lastBonus = 0   // chain expired; next eat starts at 5
+  strikeChainTimer = 2.0 s
 ```
 
 ### 3.4 Poison DOT
@@ -281,21 +275,26 @@ eachFrame(deltaSec):
 ### 3.5 Fish Group Spawning (Algorithm Sketch)
 
 ```
-TARGET_ACTIVE_GROUPS = 2        // tunable — keeps map from feeling empty
-GROUP_SPAWN_AHEAD_DISTANCE = 600–900 px from shark, biased in travel direction
+SCHOOL_SIZE = 12
+MIN_ACTIVE_GROUPS = 2           // at game start / always topped up
+MAX_ACTIVE_GROUPS = 6
+GROUP_DEPLETED_THRESHOLD = 3    // ≤3 living fish → group counts as eaten
+GROUP_SPAWN_INTERVAL = 2 s
+GROUP_SPAWN_AHEAD_DISTANCE = 900–1500 px from shark, biased in travel direction
 
-eachFrame():
-  activeGroups = countGroupsWithLivingFish()
-  if activeGroups < TARGET_ACTIVE_GROUPS:
-    spawnAnchor = shark.position + forwardVector * GROUP_SPAWN_AHEAD_DISTANCE
-    createFishSchool(SCHOOL_SIZE, spawnAnchor.x, spawnAnchor.y)
+eachFrame(deltaSec):
+  ensure activeGroups >= MIN_ACTIVE_GROUPS (spawn if below)
+  groupSpawnTimer += deltaSec
+  if groupSpawnTimer >= 2s and activeGroups < MAX_ACTIVE_GROUPS:
+    spawn one new school ahead (12 fish)
+
+countActiveGroup(groupId):
+  living = fish in group with active == true
+  active group only if living > GROUP_DEPLETED_THRESHOLD  // 4+ fish
 
 onEatCommonFish(fish):
   fish.active = false
-  // NO respawnFish() call for common fish
-
-onSharkMovedFarFromGroup():
-  // optional: despawn empty/depleted groups behind shark to save entities
+  // NO respawnFish() for common fish
 ```
 
 **Remove:** `respawnFish()` for common fish in collision handler. **Remove or repurpose:** `recycleDistantFish()` — distant eaten fish should not recycle; only living fish in active groups matter.
@@ -385,7 +384,8 @@ Hybrid **OOP + functional**:
 | `POISON_TOTAL_DAMAGE` | `20` | was instant |
 | `POISON_DURATION` | `4` (seconds) | new |
 | `POISON_TICK_RATE` | `5` (HP/s) | optional helper |
-| `STRIKE_BASE_BONUS` | `5` (points) | new |
+| `STRIKE_BASE_BONUS` | `5` (points) | first fish in chain |
+| `STRIKE_MAX_BONUS` | `80` (points) | cap per fish |
 | `STRIKE_CHAIN_WINDOW` | `2` (seconds) | new |
 | `STRIKE_MULTIPLIER` | `2` | per consecutive fish |
 | `BOOST_REGEN_DELAY` | `2` (seconds) | replaces cooldown |
@@ -393,9 +393,13 @@ Hybrid **OOP + functional**:
 | `BOOST_MULTIPLIER` | `2` | unchanged |
 | `BOMB_DAMAGE` | `30` | unchanged |
 | `BOMB_RESPAWN_DELAY` | `5` | unchanged |
-| `SCHOOL_SIZE` | `6`–`8` | group size |
+| `SCHOOL_SIZE` | `12` | fish per group |
+| `MIN_ACTIVE_GROUPS` | `2` | minimum at start |
+| `MAX_ACTIVE_GROUPS` | `6` | cap on concurrent active groups |
+| `GROUP_DEPLETED_THRESHOLD` | `3` | ≤3 fish → group inactive |
+| `GROUP_SPAWN_INTERVAL` | `2` (seconds) | timed spawn |
+| `GROUP_SPAWN_AHEAD_MIN/MAX` | `900` / `1500` (px) | spawn distance |
 | `POISONOUS_FISH_COUNT` | `2` | unchanged |
-| `TARGET_ACTIVE_GROUPS` | `2` | new — spawn ahead logic |
 
 **Remove or deprecate:** `BOOST_DURATION`, `BOOST_COOLDOWN`, `BOOST_STATES` (READY/ACTIVE/COOLDOWN).
 
@@ -426,6 +430,7 @@ Map each target rule to likely code touchpoints:
 
 - [ ] Eat common fish → score +5, hunger resets, fish gone, no respawn at that spot
 - [ ] Eat 3 fish within 2 s each → score +5, +10, +20
+- [ ] Eat 5 fish in chain → +5, +10, +20, +40, +80; 6th fish still +80
 - [ ] Wait 2 s after eat → next fish scores +5 again
 - [ ] 10 s without food → light red shark, −5 HP/s; no regen while starving
 - [ ] Eat fish while damaged → regen only after 2 s with no starvation, poison, or HP loss

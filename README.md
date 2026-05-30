@@ -69,10 +69,10 @@ Hunt common fish schools to reset hunger and rack up **strike score**. Chain eat
 | Rule | Value |
 |------|-------|
 | First fish in a chain | +5 points |
-| Each next fish (within 2s) | Previous bonus × 2 |
+| Each next fish (within 2s) | Previous bonus × 2, **max +80 per fish** |
 | Chain expires | After 2 seconds without eating |
 
-Example: hunting an 8-fish school without breaking chain → 5 + 10 + 20 + 40 + 80 + 160 + 320 + 640.
+Example chain: 5 → 10 → 20 → 40 → 80 → 80 → 80 (stays at cap).
 
 ### Boost
 
@@ -134,7 +134,7 @@ _Design spec updated — implementation catching up._
 - [x] Game restart without page refresh
 - [x] Dynamic world with camera follow
 - [ ] **Enhanced rules (design complete)** — see [implementation checklist](docs/project-design.md#7-implementation-gap-checklist)
-- [ ] Fish groups without individual respawn; spawn ahead of shark
+- [x] Fish groups without individual respawn; spawn ahead of shark
 - [x] Strike-based scoring with 2s chain window
 - [x] Best score persistence migrated to strike points
 - [x] Poison DOT (4s) and status tints (light green / light red)

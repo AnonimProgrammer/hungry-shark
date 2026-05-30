@@ -15,6 +15,9 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 ## Entries
 
+### [2026-05-30] — Fish groups spawn ahead (no eat respawn)
+16. [fish-group-spawn-ahead](prompts/016-fish-group-spawn-ahead.md) — 2 active school groups ahead of shark; common fish removed on eat permanently
+
 ### [2026-05-30] — Strike scoring & best score (points)
 15. [strike-score-best-score-points](prompts/015-strike-score-best-score-points.md) — Fish strike chain replaces time score; localStorage best score in points
 

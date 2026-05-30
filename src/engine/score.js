@@ -1,14 +1,16 @@
 import {
   STRIKE_BASE_BONUS,
+  STRIKE_MAX_BONUS,
   STRIKE_CHAIN_WINDOW,
   STRIKE_MULTIPLIER,
 } from "../config/constant.js";
 
 export function awardStrikeOnCommonFishEat(game) {
-  const bonus =
+  const uncapped =
     game.strikeChainTimer > 0
       ? game.lastBonus * STRIKE_MULTIPLIER
       : STRIKE_BASE_BONUS;
+  const bonus = Math.min(STRIKE_MAX_BONUS, uncapped);
 
   game.score += bonus;
   game.lastBonus = bonus;

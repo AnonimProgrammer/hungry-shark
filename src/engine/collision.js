@@ -1,7 +1,7 @@
 import {
   BOMB_DAMAGE,
 } from "../config/constant.js";
-import { respawnFish } from "../domain/fish.js";
+import { respawnPoisonFish } from "../domain/fish.js";
 import { applyDamage, applyPoisonContact } from "./hp.js";
 import { awardStrikeOnCommonFishEat } from "./score.js";
 
@@ -22,12 +22,12 @@ export function handleFishCollisions(shark, fishes, game) {
       game.hungerTimer = 0;
       shark.isStarving = false;
       awardStrikeOnCommonFishEat(game);
+      fish.active = false;
     } else if (fish.type === "poisonous") {
       applyPoisonContact(shark, game);
+      fish.active = false;
+      respawnPoisonFish(fish, shark.x, shark.y);
     }
-
-    fish.active = false;
-    respawnFish(fish, shark.x, shark.y);
   });
 }
 

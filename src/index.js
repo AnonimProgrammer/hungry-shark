@@ -32,8 +32,8 @@ const shark = new Shark(spawnCenter.x, spawnCenter.y);
 const input = createInputState();
 const camera = createCamera();
 
-const { fishes, bomb } = createInitialEntities(spawnCenter);
-const domain = { fishes, bomb, camera, lastTimestamp: 0 };
+const { fishes, bomb, nextGroupId } = createInitialEntities(shark, spawnCenter);
+const domain = { fishes, bomb, camera, lastTimestamp: 0, nextGroupId, groupSpawnTimer: 0 };
 
 updateCamera(camera, shark.x, shark.y);
 
