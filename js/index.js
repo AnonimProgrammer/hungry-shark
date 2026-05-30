@@ -1,5 +1,9 @@
 const canvas = document.getElementById("game-canvas");
 const ctx = canvas.getContext("2d");
+const startScreen = document.getElementById("start-screen");
+const gameOverScreen = document.getElementById("game-over-screen");
+const startBtn = document.getElementById("start-btn");
+const finalScoreEl = document.getElementById("final-score");
 
 const CANVAS_WIDTH = canvas.width;
 const CANVAS_HEIGHT = canvas.height;
@@ -10,7 +14,7 @@ const HUNGER_LIMIT = 5;
 const STARVATION_DRAIN = 10;
 
 const game = {
-  state: "playing",
+  state: "start",
   score: 0,
   hungerTimer: 0,
 };
@@ -204,7 +208,7 @@ function bindInput() {
   });
 
   canvas.addEventListener("mousedown", (event) => {
-    if (event.button === 0) {
+    if (event.button === 0 && game.state === "playing") {
       input.isMouseDown = true;
     }
   });
@@ -288,7 +292,20 @@ function checkLoseCondition() {
   if (shark.hp <= 0) {
     shark.hp = 0;
     game.state = "gameOver";
+    showGameOverScreen();
   }
+}
+
+function showGameOverScreen() {
+  finalScoreEl.textContent = `Survived ${Math.floor(game.score)} seconds`;
+  gameOverScreen.classList.remove("hidden");
+}
+
+function startGame() {
+  game.state = "playing";
+  startScreen.classList.add("hidden");
+  gameOverScreen.classList.add("hidden");
+  lastTimestamp = 0;
 }
 
 function update(deltaSec) {
@@ -311,6 +328,10 @@ function update(deltaSec) {
 }
 
 function drawHud() {
+  if (game.state !== "playing") {
+    return;
+  }
+
   const isStarving = game.hungerTimer >= HUNGER_LIMIT;
 
   ctx.font = "16px sans-serif";
@@ -327,24 +348,6 @@ function drawHud() {
   ctx.fillText(`Hunger: ${game.hungerTimer.toFixed(1)}s`, 16, 60);
 }
 
-function drawGameOverOverlay() {
-  ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
-  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 36px sans-serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("Game Over", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 24);
-
-  ctx.font = "20px sans-serif";
-  ctx.fillText(
-    `Survived ${Math.floor(game.score)} seconds`,
-    CANVAS_WIDTH / 2,
-    CANVAS_HEIGHT / 2 + 20
-  );
-}
-
 function render() {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   drawBackground();
@@ -353,10 +356,6 @@ function render() {
   bomb.draw(ctx);
   shark.draw(ctx);
   drawHud();
-
-  if (game.state === "gameOver") {
-    drawGameOverOverlay();
-  }
 }
 
 let lastTimestamp = 0;
@@ -374,4 +373,5 @@ function gameLoop(timestamp) {
 }
 
 bindInput();
+startBtn.addEventListener("click", startGame);
 requestAnimationFrame(gameLoop);

@@ -108,7 +108,8 @@ _Game not yet implemented — updated as development progresses._
 - [x] Spawn fish schools and underwater bomb
 - [x] Add collision detection (shark ↔ fish, shark ↔ bomb)
 - [x] Add HP / hunger mechanics and survival score
-- [ ] Game Over screen with restart (next milestone)
+- [x] Start screen and game over screen
+- [ ] Game restart without page refresh (next milestone)
 - [ ] Tune boost cooldown and spawn rates
 
 ---

@@ -17,8 +17,11 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 <!-- Add new entries at the top. Format:
 ### [YYYY-MM-DD] — Short title
-{order number (e.g. 1, 2, 3 ...)}. [prompt-title](prompts/00N-prompt-title.md) — one-line summary
+1. [prompt-title](prompts/00N-prompt-title.md) — one-line summary
 -->
+
+### [2026-05-30] — Start & game over screens
+4. [start-game-over-screens](prompts/004-start-game-over-screens.md) — HTML overlays, Start button, game-over panel with final score
 
 ### [2026-05-30] — Score & lose condition
 3. [score-lose](prompts/003-score-lose.md) — Survival score, starvation drain, HUD, game-over when HP = 0

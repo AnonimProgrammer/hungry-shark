@@ -9,6 +9,27 @@
   <body>
     <main id="game-container">
       <canvas id="game-canvas" width="800" height="600"></canvas>
+
+      <div id="start-screen" class="screen-overlay">
+        <div class="screen-panel">
+          <h1 class="screen-title">Hungry Shark</h1>
+          <p class="screen-subtitle">Swim, hunt, survive.</p>
+          <ul class="screen-instructions">
+            <li>Move mouse to aim · Hold LMB to swim</li>
+            <li>Eat orange fish to restore HP and reset hunger</li>
+            <li>Avoid the bomb — starvation hits after 5s without food</li>
+          </ul>
+          <button id="start-btn" type="button">Start Game</button>
+        </div>
+      </div>
+
+      <div id="game-over-screen" class="screen-overlay hidden">
+        <div class="screen-panel">
+          <h1 class="screen-title">Game Over</h1>
+          <p id="final-score" class="screen-score">Survived 0 seconds</p>
+          <p class="screen-subtitle">Your run has ended.</p>
+        </div>
+      </div>
     </main>
     <script src="js/index.js"></script>
   </body>
