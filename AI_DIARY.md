@@ -20,7 +20,8 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 1. [prompt-title](prompts/00N-prompt-title.md) — one-line summary
 -->
 
-_No entries yet. As development progresses, log each significant AI misstep or lesson here and create a matching file in `prompts/`._
+### [2026-05-30] — Player movement (Shark + mouse swim)
+1. [player-movement](prompts/001-player-movement.md) — Shark class, mouse aim, LMB hold to swim forward
 
 ---
 

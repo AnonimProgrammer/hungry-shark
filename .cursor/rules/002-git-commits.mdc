@@ -1,0 +1,30 @@
+---
+description: Git commit policy — when the agent may commit, mandatory milestone messages, safety
+alwaysApply: true
+---
+
+# Git Commits
+
+## When to commit
+
+**Do not commit unless the user explicitly asks you to.**
+
+| User says | Agent action |
+|-----------|--------------|
+| "commit this for me", "create the commit", "make the mandatory commit" | Run `git commit` |
+| "let me commit", "I'll commit this", "ready to commit" | **Do not commit** — leave changes unstaged or staged; the user commits locally |
+| Unclear | Ask before committing |
+
+Phrases like "let me commit" mean the **user** will commit, not the agent.
+
+## Commit workflow (when asked)
+
+1. Run `git status`, `git diff`, and `git log` to inspect changes and message style.
+2. Stage only relevant files — never `.env`, credentials, or secrets.
+3. Commit with a HEREDOC message; run `git status` after to confirm success.
+4. Do **not** push unless the user explicitly asks.
+
+## Safety
+
+- Never update git config, skip hooks, force-push to `main`/`master`, or run destructive git commands unless explicitly requested.
+- Avoid `git commit --amend` unless the user asks and the last commit was yours and not pushed.
