@@ -6,10 +6,16 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 ## AI Tools Used
 
+All tools below are **free-tier**.
+
 | Tool | Why |
 |------|-----|
-| **Cursor (Claude)** | Primary coding assistant — inline edits, repo context, and iterative debugging in the IDE |
-| _(add others as you use them)_ | e.g. ChatGPT free, Gemini free for brainstorming or quick questions |
+| **ChatGPT (free)** | Quick questions, rule wording, and sanity-checking game logic before coding |
+| **Gemini (free)** | Coding assistant and second opinion on design choices and short explanations when stuck |
+| **Cursor (Codex)** | Fast inline edits and small refactors |
+| **Cursor (GPT)** | Alternative model in Cursor for debugging and comparing suggestions |
+| **Cursor (Grok)** | Occasional alternate answers in Cursor when another perspective helped |
+| **Cursor (Claude)** | Coding assistant — repo context, multi-file changes, and iterative debugging |
 
 ---
 

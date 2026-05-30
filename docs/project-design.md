@@ -4,6 +4,8 @@
 
 Blueprint for a browser-based, 2D underwater survival game built strictly with **HTML5, CSS3, and Vanilla JavaScript** (no external libraries, game engines, or frameworks). The player controls a shark in a dynamic ocean, hunts schools of fish, and manages hunger, boost energy, and environmental hazards.
 
+**Related docs:** [Introduction](introduction.md) (overview & entities) · [How to play](how-to-play.md) (controls & objectives) · [README](../README.md) (documentation index) · [AI diary](../AI_DIARY.md)
+
 **Design revision:** Enhanced game rules — fish group spawning, strike-based scoring, poison over time, updated hunger/boost mechanics, and HUD redesign.
 
 ---
