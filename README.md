@@ -109,7 +109,7 @@ _Game not yet implemented — updated as development progresses._
 - [x] Add collision detection (shark ↔ fish, shark ↔ bomb)
 - [x] Add HP / hunger mechanics and survival score
 - [x] Start screen and game over screen
-- [ ] Game restart without page refresh (next milestone)
+- [x] Game restart without page refresh
 - [ ] Tune boost cooldown and spawn rates
 
 ---

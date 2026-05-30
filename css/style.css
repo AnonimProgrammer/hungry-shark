@@ -94,7 +94,7 @@ body {
   margin: 0;
 }
 
-#start-btn {
+.screen-btn {
   font-family: sans-serif;
   font-size: 1.1rem;
   font-weight: 600;
@@ -107,6 +107,6 @@ body {
   transition: background 0.15s ease;
 }
 
-#start-btn:hover {
+.screen-btn:hover {
   background: #81d4fa;
 }

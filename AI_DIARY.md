@@ -15,10 +15,8 @@ A log of AI-assisted development for this project. Each numbered entry below lin
 
 ## Entries
 
-<!-- Add new entries at the top. Format:
-### [YYYY-MM-DD] — Short title
-1. [prompt-title](prompts/00N-prompt-title.md) — one-line summary
--->
+### [2026-05-30] — Game restart
+5. [game-restart](prompts/005-game-restart.md) — resetGame(), Play Again button, full state reset without page reload
 
 ### [2026-05-30] — Start & game over screens
 4. [start-game-over-screens](prompts/004-start-game-over-screens.md) — HTML overlays, Start button, game-over panel with final score

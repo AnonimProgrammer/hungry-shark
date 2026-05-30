@@ -3,6 +3,7 @@ const ctx = canvas.getContext("2d");
 const startScreen = document.getElementById("start-screen");
 const gameOverScreen = document.getElementById("game-over-screen");
 const startBtn = document.getElementById("start-btn");
+const restartBtn = document.getElementById("restart-btn");
 const finalScoreEl = document.getElementById("final-score");
 
 const CANVAS_WIDTH = canvas.width;
@@ -223,8 +224,12 @@ function bindInput() {
 }
 
 const shark = new Shark(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-const fishes = createFishSchool(6, 200, 280);
+let fishes = createFishSchool(6, 200, 280);
 const bomb = new Bomb(620, 380);
+
+const INITIAL_FISH_COUNT = 6;
+const INITIAL_FISH_CENTER = { x: 200, y: 280 };
+const INITIAL_BOMB_POSITION = { x: 620, y: 380 };
 
 function drawBackground() {
   ctx.fillStyle = "#b3e5fc";
@@ -296,16 +301,40 @@ function checkLoseCondition() {
   }
 }
 
+function resetGame() {
+  shark.x = CANVAS_WIDTH / 2;
+  shark.y = CANVAS_HEIGHT / 2;
+  shark.angle = 0;
+  shark.hp = 100;
+  shark.hitFlash = 0;
+
+  game.score = 0;
+  game.hungerTimer = 0;
+
+  fishes = createFishSchool(
+    INITIAL_FISH_COUNT,
+    INITIAL_FISH_CENTER.x,
+    INITIAL_FISH_CENTER.y
+  );
+
+  bomb.x = INITIAL_BOMB_POSITION.x;
+  bomb.y = INITIAL_BOMB_POSITION.y;
+  bomb.active = true;
+
+  input.isMouseDown = false;
+  lastTimestamp = 0;
+}
+
 function showGameOverScreen() {
   finalScoreEl.textContent = `Survived ${Math.floor(game.score)} seconds`;
   gameOverScreen.classList.remove("hidden");
 }
 
 function startGame() {
+  resetGame();
   game.state = "playing";
   startScreen.classList.add("hidden");
   gameOverScreen.classList.add("hidden");
-  lastTimestamp = 0;
 }
 
 function update(deltaSec) {
@@ -374,4 +403,5 @@ function gameLoop(timestamp) {
 
 bindInput();
 startBtn.addEventListener("click", startGame);
+restartBtn.addEventListener("click", startGame);
 requestAnimationFrame(gameLoop);
