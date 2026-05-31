@@ -12,6 +12,7 @@ import { applyDamage, resetHpState, updateHpRegen } from "./hp.js";
 import { resetStrikeState, updateStrikeChain } from "./score.js";
 import { updateCamera, screenToWorld } from "./camera.js";
 import { render } from "./render.js";
+import { pauseGame } from "./settings.js";
 
 export function createGameState() {
   return {
@@ -23,6 +24,7 @@ export function createGameState() {
     hpRegenTimer: 0,
     hpLostThisFrame: false,
     highScore: 0,
+    musicEnabled: true,
   };
 }
 
@@ -110,6 +112,7 @@ export function startGame(game, shark, domain, input, dom) {
   game.state = "playing";
   dom.startScreen.classList.add("hidden");
   dom.gameOverScreen.classList.add("hidden");
+  dom.settingsMenu.classList.add("hidden");
 }
 
 function update(game, shark, domain, input, dom, deltaSec) {
@@ -150,13 +153,18 @@ function update(game, shark, domain, input, dom, deltaSec) {
 
 export function createGameLoop(ctx, game, shark, domain, input, dom) {
   return function gameLoop(timestamp) {
-    const deltaSec = domain.lastTimestamp
-      ? (timestamp - domain.lastTimestamp) / 1000
-      : 0;
-    domain.lastTimestamp = timestamp;
-
     if (game.state === "playing") {
-      update(game, shark, domain, input, dom, deltaSec);
+      const deltaSec = domain.lastTimestamp
+        ? (timestamp - domain.lastTimestamp) / 1000
+        : 0;
+      domain.lastTimestamp = timestamp;
+
+      if (input.pauseClicked) {
+        pauseGame(game, dom, input);
+        input.pauseClicked = false;
+      } else {
+        update(game, shark, domain, input, dom, deltaSec);
+      }
     }
 
     render(ctx, game, shark, domain.fishes, domain.bomb, domain.camera);

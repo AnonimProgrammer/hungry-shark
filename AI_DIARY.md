@@ -21,6 +21,9 @@ All tools below are **free-tier**.
 
 ## Entries
 
+### [2026-05-31] — In-game settings menu mock
+19. [settings-menu-mock](prompts/019-settings-menu-mock.md) — Circular pause button on HUD; Resume, Quit, mock music toggle
+
 ### [2026-05-31] — Top-right HUD bars
 18. [top-right-hud-bars](prompts/018-top-right-hud-bars.md) — HP/boost bars top-right, golden score below, best score removed from in-game HUD
 

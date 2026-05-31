@@ -10,39 +10,70 @@ import {
   startGame,
   createGameLoop,
 } from "./engine/game.js";
+import {
+  resumeGame,
+  quitToHome,
+  toggleMusic,
+  updateMusicButtonLabel,
+} from "./engine/settings.js";
 
-const canvas = document.getElementById("game-canvas");
-canvas.width = CANVAS_WIDTH;
-canvas.height = CANVAS_HEIGHT;
-const ctx = canvas.getContext("2d");
+async function loadSettingsMenu(container) {
+  const response = await fetch("page/settings-menu.html");
+  if (!response.ok) {
+    throw new Error(`Failed to load settings menu: ${response.status}`);
+  }
+  container.insertAdjacentHTML("beforeend", await response.text());
+}
 
-const dom = {
-  startScreen: document.getElementById("start-screen"),
-  gameOverScreen: document.getElementById("game-over-screen"),
-  startBtn: document.getElementById("start-btn"),
-  restartBtn: document.getElementById("restart-btn"),
-  finalScoreEl: document.getElementById("final-score"),
-  startHighScoreEl: document.getElementById("start-high-score"),
-  gameOverHighScoreEl: document.getElementById("game-over-high-score"),
-};
+function createDomRefs() {
+  return {
+    startScreen: document.getElementById("start-screen"),
+    gameOverScreen: document.getElementById("game-over-screen"),
+    settingsMenu: document.getElementById("settings-menu"),
+    startBtn: document.getElementById("start-btn"),
+    restartBtn: document.getElementById("restart-btn"),
+    settingsResumeBtn: document.getElementById("settings-resume-btn"),
+    settingsQuitBtn: document.getElementById("settings-quit-btn"),
+    settingsMusicBtn: document.getElementById("settings-music-btn"),
+    finalScoreEl: document.getElementById("final-score"),
+    startHighScoreEl: document.getElementById("start-high-score"),
+    gameOverHighScoreEl: document.getElementById("game-over-high-score"),
+  };
+}
 
-const spawnCenter = getDefaultSpawnCenter();
-const game = createGameState();
-const shark = new Shark(spawnCenter.x, spawnCenter.y);
-const input = createInputState();
-const camera = createCamera();
+async function init() {
+  const container = document.getElementById("game-container");
+  await loadSettingsMenu(container);
 
-const { fishes, bomb, nextGroupId } = createInitialEntities(shark, spawnCenter);
-const domain = { fishes, bomb, camera, lastTimestamp: 0, nextGroupId, groupSpawnTimer: 0 };
+  const canvas = document.getElementById("game-canvas");
+  canvas.width = CANVAS_WIDTH;
+  canvas.height = CANVAS_HEIGHT;
+  const ctx = canvas.getContext("2d");
+  const dom = createDomRefs();
 
-updateCamera(camera, shark.x, shark.y);
+  const spawnCenter = getDefaultSpawnCenter();
+  const game = createGameState();
+  const shark = new Shark(spawnCenter.x, spawnCenter.y);
+  const input = createInputState();
+  const camera = createCamera();
 
-bindInput(canvas, input, () => game.state);
+  const { fishes, bomb, nextGroupId } = createInitialEntities(shark, spawnCenter);
+  const domain = { fishes, bomb, camera, lastTimestamp: 0, nextGroupId, groupSpawnTimer: 0 };
 
-game.highScore = loadHighScore();
-updateHighScoreDisplay(game, dom);
+  updateCamera(camera, shark.x, shark.y);
+  bindInput(canvas, input, () => game.state);
 
-dom.startBtn.addEventListener("click", () => startGame(game, shark, domain, input, dom));
-dom.restartBtn.addEventListener("click", () => startGame(game, shark, domain, input, dom));
+  game.highScore = loadHighScore();
+  updateHighScoreDisplay(game, dom);
+  updateMusicButtonLabel(game, dom);
 
-requestAnimationFrame(createGameLoop(ctx, game, shark, domain, input, dom));
+  dom.startBtn.addEventListener("click", () => startGame(game, shark, domain, input, dom));
+  dom.restartBtn.addEventListener("click", () => startGame(game, shark, domain, input, dom));
+  dom.settingsResumeBtn.addEventListener("click", () => resumeGame(game, dom, domain));
+  dom.settingsQuitBtn.addEventListener("click", () => quitToHome(game, dom, input));
+  dom.settingsMusicBtn.addEventListener("click", () => toggleMusic(game, dom));
+
+  requestAnimationFrame(createGameLoop(ctx, game, shark, domain, input, dom));
+}
+
+init();

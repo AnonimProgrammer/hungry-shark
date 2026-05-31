@@ -1,4 +1,5 @@
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../config/constant.js";
+import { isPauseButtonHit } from "./render.js";
 
 export function createInputState() {
   return {
@@ -6,20 +7,41 @@ export function createInputState() {
     mouseY: CANVAS_HEIGHT / 2,
     isMouseDown: false,
     doubleClicked: false,
+    pauseClicked: false,
+  };
+}
+
+function canvasCoords(canvas, event) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (event.clientX - rect.left) * scaleX,
+    y: (event.clientY - rect.top) * scaleY,
   };
 }
 
 export function bindInput(canvas, input, getGameState) {
   canvas.addEventListener("mousemove", (event) => {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    input.mouseX = (event.clientX - rect.left) * scaleX;
-    input.mouseY = (event.clientY - rect.top) * scaleY;
+    const { x, y } = canvasCoords(canvas, event);
+    input.mouseX = x;
+    input.mouseY = y;
   });
 
   canvas.addEventListener("mousedown", (event) => {
-    if (event.button === 0 && getGameState() === "playing") {
+    if (event.button !== 0) {
+      return;
+    }
+
+    const { x, y } = canvasCoords(canvas, event);
+    const state = getGameState();
+
+    if (state === "playing" && isPauseButtonHit(x, y)) {
+      input.pauseClicked = true;
+      return;
+    }
+
+    if (state === "playing") {
       input.isMouseDown = true;
       if (event.detail >= 2) {
         input.doubleClicked = true;

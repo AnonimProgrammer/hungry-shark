@@ -16,6 +16,40 @@ const HUD_ROW_GAP = 10;
 const HUD_SCORE_GAP = 12;
 const HUD_LABEL_FONT = "bold 16px sans-serif";
 const HUD_SCORE_FONT = "bold 22px sans-serif";
+const PAUSE_BTN_RADIUS = 16;
+const PAUSE_BTN_GAP = 12;
+
+let pauseButtonHitArea = { cx: 0, cy: 0, r: PAUSE_BTN_RADIUS };
+
+export function isPauseButtonHit(x, y) {
+  const { cx, cy, r } = pauseButtonHitArea;
+  const dx = x - cx;
+  const dy = y - cy;
+  return dx * dx + dy * dy <= r * r;
+}
+
+function getHudContentRight() {
+  return CANVAS_WIDTH - HUD_MARGIN - PAUSE_BTN_RADIUS * 2 - PAUSE_BTN_GAP;
+}
+
+function drawPauseButton(ctx, cx, cy, radius) {
+  pauseButtonHitArea = { cx, cy, r: radius };
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+  ctx.fill();
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  const barWidth = 3;
+  const barHeight = 12;
+  const barGap = 4;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(cx - barGap / 2 - barWidth, cy - barHeight / 2, barWidth, barHeight);
+  ctx.fillRect(cx + barGap / 2, cy - barHeight / 2, barWidth, barHeight);
+}
 
 export function drawBackground(ctx, camera) {
   const surfaceScreenY = WATER_SURFACE_Y - camera.y;
@@ -87,12 +121,14 @@ function drawLabeledBar(ctx, label, labelRightX, barX, barY, barWidth, barHeight
 }
 
 export function drawHud(ctx, game, shark) {
-  if (game.state !== "playing") {
+  if (game.state !== "playing" && game.state !== "paused") {
     return;
   }
 
   const top = HUD_MARGIN;
-  const rightEdge = CANVAS_WIDTH - HUD_MARGIN;
+  const rightEdge = getHudContentRight();
+  const pauseCenterX = CANVAS_WIDTH - HUD_MARGIN - PAUSE_BTN_RADIUS;
+  const pauseCenterY = top + HUD_BAR_HEIGHT / 2;
   const hpBarX = rightEdge - HUD_HP_BAR_WIDTH;
   const hpLabelRightX = hpBarX - HUD_LABEL_GAP;
   const boostBarX = rightEdge - HUD_BOOST_BAR_WIDTH;
@@ -109,6 +145,8 @@ export function drawHud(ctx, game, shark) {
     shark.hp / 100,
     "#e53935"
   );
+
+  drawPauseButton(ctx, pauseCenterX, pauseCenterY, PAUSE_BTN_RADIUS);
 
   const boostY = top + HUD_BAR_HEIGHT + HUD_ROW_GAP;
   const boostFill = shark.isActivelyBoosting ? "#42a5f5" : "#1565c0";
