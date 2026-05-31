@@ -34,6 +34,13 @@ Feature prompts and iteration notes are indexed in **[AI_DIARY.md](AI_DIARY.md)*
 
 ---
 
+## Known bugs
+
+- **Starvation ends too soon after eating** — eating a single fish can incorrectly stop starvation damage; hunger reset / starvation state is not behaving as intended.
+- **Spawning breaks far from start** — fish schools and hazards do not spawn or relocate reliably when the shark travels far from the initial spawn area.
+
+---
+
 ## What’s next
 
 Planned work (see [Project design §9](docs/project-design.md#9-planned-work)):
