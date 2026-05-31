@@ -21,6 +21,9 @@ All tools below are **free-tier**.
 
 ## Entries
 
+### [2026-05-31] — How to play tutorial
+22. [how-to-play-tutorial](prompts/022-how-to-play-tutorial.md) — 3-slide guide: HUD callouts, eat fish demo, avoid bomb/lionfish demo
+
 ### [2026-05-31] — Shark & lionfish visuals
 21. [shark-lionfish-visuals](prompts/021-shark-lionfish-visuals.md) — Lionfish hazard; `shark.png` sprite, left/right facing fix, oval status glow
 

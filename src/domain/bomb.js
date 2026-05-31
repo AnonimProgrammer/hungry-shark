@@ -80,7 +80,7 @@ export class Bomb {
   }
 }
 
-function drawBombExplosion(ctx, x, y, timeLeft) {
+export function drawBombExplosion(ctx, x, y, timeLeft) {
   const progress = 1 - timeLeft / BOMB_EXPLOSION_DURATION;
   const baseRadius = 16 + progress * 48;
 

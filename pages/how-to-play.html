@@ -1,0 +1,69 @@
+<div id="how-to-play-screen" class="how-to-play-screen hidden">
+  <div class="how-to-play-panel">
+    <div class="htp-slides">
+      <section class="htp-slide htp-slide-active" data-slide="0">
+        <h2 class="htp-title">Know your HUD</h2>
+        <p class="htp-lead">Top-right overlay while you play.</p>
+        <div class="htp-hud-layout">
+          <div class="htp-callout-row">
+            <div class="htp-callout-text">
+              <p><strong>HP bar</strong> — Your health. Starvation, poison, and bombs drain it. Game over at 0.</p>
+            </div>
+            <div class="htp-callout-line" aria-hidden="true"></div>
+          </div>
+          <div class="htp-hud-row">
+            <span class="htp-hud-label">HP</span>
+            <div class="htp-bar htp-bar-hp"><span style="width: 72%"></span></div>
+          </div>
+
+          <div class="htp-callout-row">
+            <div class="htp-callout-text">
+              <p><strong>Boost bar</strong> — Double-click + hold LMB for 2× speed. Drains while boosting, refills after 2 s idle.</p>
+            </div>
+            <div class="htp-callout-line" aria-hidden="true"></div>
+          </div>
+          <div class="htp-hud-row htp-hud-row-boost">
+            <span class="htp-hud-label">Boost</span>
+            <div class="htp-bar htp-bar-boost"><span style="width: 100%"></span></div>
+          </div>
+
+          <div class="htp-callout-row">
+            <div class="htp-callout-text">
+              <p><strong>Score</strong> — Strike points from eating fish. Chain within 2 s to double each bonus (max 80 per fish).</p>
+            </div>
+            <div class="htp-callout-line" aria-hidden="true"></div>
+          </div>
+          <div class="htp-hud-score"><span class="htp-star">★</span> 42</div>
+        </div>
+      </section>
+
+      <section class="htp-slide" data-slide="1">
+        <h2 class="htp-title">Eat to stay alive</h2>
+        <p class="htp-lead">Hunt orange fish schools to reset hunger and build your strike score.</p>
+        <canvas id="htp-eat-canvas" width="560" height="300" aria-label="Shark chasing a school of fish"></canvas>
+      </section>
+
+      <section class="htp-slide" data-slide="2">
+        <h2 class="htp-title">Avoid danger!</h2>
+        <p class="htp-lead">Bombs and lionfish hurt — bombs explode for −30 HP; lionfish poison you over 4 seconds.</p>
+        <div class="htp-danger-split">
+          <div class="htp-danger-pane">
+            <p class="htp-pane-label">Bomb explosion</p>
+            <canvas id="htp-bomb-canvas" width="270" height="260" aria-label="Shark hit by bomb explosion"></canvas>
+          </div>
+          <div class="htp-danger-pane">
+            <p class="htp-pane-label">Lionfish poison</p>
+            <canvas id="htp-poison-canvas" width="270" height="260" aria-label="Shark poisoned by lionfish"></canvas>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="htp-nav">
+      <button id="htp-back-btn" type="button" class="htp-nav-btn" disabled>Back</button>
+      <span id="htp-step-label" class="htp-step-label">1 / 3</span>
+      <button id="htp-next-btn" type="button" class="htp-nav-btn htp-nav-btn-primary">Next</button>
+      <button id="htp-close-btn" type="button" class="htp-nav-btn">Close</button>
+    </footer>
+  </div>
+</div>

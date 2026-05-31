@@ -14,6 +14,7 @@ import { updateCamera, screenToWorld } from "./camera.js";
 import { render } from "./render.js";
 import { pauseGame } from "./settings.js";
 import { hideMainMenu } from "./menu.js";
+import { closeHowToPlayPanel } from "./howToPlay.js";
 
 export function createGameState() {
   return {
@@ -112,6 +113,7 @@ export function startGame(game, shark, domain, input, dom) {
   resetGame(game, shark, domain, input);
   game.state = "playing";
   hideMainMenu(dom);
+  closeHowToPlayPanel(dom);
   dom.gameOverScreen.classList.add("hidden");
   dom.pauseMenu.classList.add("hidden");
   dom.mainSettingsMenu.classList.add("hidden");

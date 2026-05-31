@@ -6,6 +6,7 @@ import {
   SEABED_HEIGHT,
   BOOST_METER_MAX,
 } from "../config/constant.js";
+import { drawWaterColumn } from "../domain/drawing.js";
 
 const HUD_MARGIN = 20;
 const HUD_HP_BAR_WIDTH = 180;
@@ -63,8 +64,7 @@ export function drawBackground(ctx, camera) {
   const waterTop = Math.max(0, surfaceScreenY);
   const waterBottom = Math.min(CANVAS_HEIGHT, seabedScreenY);
   if (waterBottom > waterTop) {
-    ctx.fillStyle = "#4fc3f7";
-    ctx.fillRect(0, waterTop, CANVAS_WIDTH, waterBottom - waterTop);
+    drawWaterColumn(ctx, 0, waterTop, CANVAS_WIDTH, waterBottom - waterTop, surfaceScreenY, seabedScreenY);
   }
 
   if (seabedScreenY < CANVAS_HEIGHT) {

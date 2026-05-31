@@ -1,3 +1,17 @@
+export const WATER_COLOR_SHALLOW = "#81d4fa";
+export const WATER_COLOR_MID = "#4fc3f7";
+export const WATER_COLOR_DEEP = "#01579b";
+
+/** World-anchored water gradient from surface line to seabed line (screen Y coords). */
+export function drawWaterColumn(ctx, x, y, width, height, surfaceScreenY, seabedScreenY) {
+  const gradient = ctx.createLinearGradient(x, surfaceScreenY, x, seabedScreenY);
+  gradient.addColorStop(0, WATER_COLOR_SHALLOW);
+  gradient.addColorStop(0.45, WATER_COLOR_MID);
+  gradient.addColorStop(1, WATER_COLOR_DEEP);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(x, y, width, height);
+}
+
 function applyFacingTransform(ctx, angle) {
   if (Math.cos(angle) < 0) {
     ctx.scale(-1, 1);

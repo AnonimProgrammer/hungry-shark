@@ -1,0 +1,251 @@
+.how-to-play-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  color: #ffffff;
+  background: rgba(10, 25, 47, 0.92);
+  z-index: 20;
+}
+
+.how-to-play-screen.hidden {
+  display: none;
+}
+
+.how-to-play-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: min(720px, 100%);
+  max-height: 100%;
+  padding: 1.75rem 2rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.htp-slides {
+  flex: 1;
+  min-height: 0;
+}
+
+.htp-slide {
+  display: none;
+}
+
+.htp-slide-active {
+  display: block;
+}
+
+.htp-title {
+  font-family: sans-serif;
+  font-size: 1.85rem;
+  font-weight: 700;
+  margin: 0 0 0.35rem;
+}
+
+.htp-lead {
+  font-family: sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  opacity: 0.88;
+  margin: 0 0 1.25rem;
+}
+
+.htp-hud-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  grid-template-rows: repeat(3, auto);
+  align-items: center;
+  gap: 0.65rem 0.35rem;
+  padding: 1rem;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #81d4fa 0%, #4fc3f7 45%, #01579b 100%);
+}
+
+.htp-callout-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.htp-callout-text {
+  flex: 0 1 auto;
+  max-width: 280px;
+  font-family: sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.htp-callout-text p {
+  margin: 0;
+}
+
+.htp-callout-line {
+  flex: 1;
+  min-width: 1.5rem;
+  height: 2px;
+  margin-left: 0.35rem;
+  background: #ffffff;
+  position: relative;
+}
+
+.htp-callout-line::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 8px solid #ffffff;
+}
+
+.htp-hud-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.htp-hud-row-boost {
+  padding-left: 1.75rem;
+}
+
+.htp-hud-label {
+  font-family: sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  width: 2.75rem;
+  text-align: right;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.htp-bar {
+  flex: 1;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  outline: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.htp-bar span {
+  display: block;
+  height: 100%;
+}
+
+.htp-bar-hp span {
+  background: #e53935;
+}
+
+.htp-bar-boost span {
+  background: #1565c0;
+}
+
+.htp-hud-score {
+  text-align: right;
+  font-family: sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+  padding-right: 0.15rem;
+}
+
+.htp-star {
+  color: #ffd700;
+}
+
+#htp-eat-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  background: #4fc3f7;
+}
+
+.htp-danger-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.htp-danger-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.htp-pane-label {
+  font-family: sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0;
+  text-align: center;
+  opacity: 0.9;
+}
+
+#htp-bomb-canvas,
+#htp-poison-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  background: #4fc3f7;
+}
+
+.htp-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.htp-step-label {
+  font-family: sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  opacity: 0.85;
+  min-width: 3rem;
+  text-align: center;
+}
+
+.htp-nav-btn {
+  font-family: sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.6rem 1.25rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  transition: background 0.15s ease;
+}
+
+.htp-nav-btn:hover:not(:disabled) {
+  background: rgba(79, 195, 247, 0.35);
+}
+
+.htp-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.htp-nav-btn-primary {
+  color: #0a192f;
+  background: #4fc3f7;
+}
+
+.htp-nav-btn-primary:hover:not(:disabled) {
+  background: #81d4fa;
+}

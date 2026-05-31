@@ -54,6 +54,7 @@ export function showMainMenu(game, dom, input) {
   dom.mainMenu.classList.remove("hidden");
   dom.pauseMenu.classList.add("hidden");
   dom.mainSettingsMenu.classList.add("hidden");
+  dom.howToPlayScreen.classList.add("hidden");
   dom.gameOverScreen.classList.add("hidden");
 
   startMenuSharkAnimation(dom.menuSharkCanvas);
@@ -65,10 +66,6 @@ export function hideMainMenu(dom) {
 }
 
 export function bindMockMenuButtons(dom) {
-  dom.howToPlayBtn.addEventListener("click", () => {
-    console.info("[mock] How to play — coming soon");
-  });
-
   dom.sharkShopBtn.addEventListener("click", () => {
     console.info("[mock] Shark shop — coming soon");
   });

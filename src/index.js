@@ -19,6 +19,7 @@ import {
   closeMainSettings,
 } from "./engine/settings.js";
 import { bindMockMenuButtons, showMainMenu } from "./engine/menu.js";
+import { bindHowToPlay } from "./engine/howToPlay.js";
 import { loadGameAssets } from "./engine/assets.js";
 
 async function loadPage(container, path) {
@@ -33,6 +34,7 @@ async function loadOverlays(container) {
   await loadPage(container, "pages/main-menu.html");
   await loadPage(container, "pages/pause-menu.html");
   await loadPage(container, "pages/main-settings.html");
+  await loadPage(container, "pages/how-to-play.html");
 }
 
 function createDomRefs() {
@@ -55,6 +57,15 @@ function createDomRefs() {
     finalScoreEl: document.getElementById("final-score"),
     mainMenuHighScoreEl: document.getElementById("main-menu-high-score"),
     gameOverHighScoreEl: document.getElementById("game-over-high-score"),
+    howToPlayScreen: document.getElementById("how-to-play-screen"),
+    htpSlides: [...document.querySelectorAll(".htp-slide")],
+    htpEatCanvas: document.getElementById("htp-eat-canvas"),
+    htpBombCanvas: document.getElementById("htp-bomb-canvas"),
+    htpPoisonCanvas: document.getElementById("htp-poison-canvas"),
+    htpBackBtn: document.getElementById("htp-back-btn"),
+    htpNextBtn: document.getElementById("htp-next-btn"),
+    htpCloseBtn: document.getElementById("htp-close-btn"),
+    htpStepLabel: document.getElementById("htp-step-label"),
   };
 }
 
@@ -87,6 +98,7 @@ async function init() {
   showMainMenu(game, dom, input);
 
   bindMockMenuButtons(dom);
+  bindHowToPlay(game, dom, input);
 
   dom.playBtn.addEventListener("click", () => startGame(game, shark, domain, input, dom));
   dom.restartBtn.addEventListener("click", () => startGame(game, shark, domain, input, dom));
