@@ -88,7 +88,7 @@ async function init() {
   const camera = createCamera();
 
   const { fishes, bombs, nextGroupId } = createInitialEntities(shark, spawnCenter);
-  const domain = { fishes, bombs, camera, lastTimestamp: 0, nextGroupId, groupSpawnTimer: 0 };
+  const domain = { fishes, bombs, camera, lastTimestamp: 0, nextGroupId };
 
   updateCamera(camera, shark.x, shark.y);
   bindInput(canvas, input, () => game.state);

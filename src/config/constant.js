@@ -51,6 +51,9 @@ export const STRIKE_MULTIPLIER = 2;
 export const SCHOOL_SIZE = 12;
 export const MIN_ACTIVE_GROUPS = 2;
 export const MAX_ACTIVE_GROUPS = 6;
+/** Active fish schools required within this radius of the shark. */
+export const FISH_VICINITY_RADIUS = 4000;
+export const FISH_TARGET_SCHOOL_COUNT = 6;
 /** Groups with this many fish or fewer are treated as eaten (no longer active). */
 export const GROUP_DEPLETED_THRESHOLD = 3;
 export const GROUP_SPAWN_INTERVAL = 2;

@@ -21,6 +21,9 @@ All tools below are **free-tier**.
 
 ## Entries
 
+### [2026-05-31] — Fish school vicinity spawning
+25. [fish-school-vicinity-spawn](prompts/025-fish-school-vicinity-spawn.md) — 6 active schools within 5000px; relocate far schools or spawn ahead using existing distance rules
+
 ### [2026-05-31] — Multi-bomb vicinity spawning
 24. [multi-bomb-vicinity-spawn](prompts/024-multi-bomb-vicinity-spawn.md) — 5 bombs within 2000px of shark, 500px min spacing, 10s respawn, relocate when shark moves away
 

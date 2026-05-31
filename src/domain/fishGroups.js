@@ -1,18 +1,15 @@
 import {
   SCHOOL_SIZE,
-  MIN_ACTIVE_GROUPS,
-  MAX_ACTIVE_GROUPS,
   GROUP_DEPLETED_THRESHOLD,
-  GROUP_SPAWN_INTERVAL,
   POISONOUS_FISH_COUNT,
+  FISH_VICINITY_RADIUS,
+  FISH_TARGET_SCHOOL_COUNT,
 } from "../config/constant.js";
 import {
   getDefaultSpawnCenterY,
   getGroupSpawnAnchor,
 } from "./spawn.js";
-import {
-  createInitialBombs,
-} from "./bombGroups.js";
+import { createInitialBombs } from "./bombGroups.js";
 import {
   createFishSchool,
   createPoisonousFish,
@@ -33,7 +30,7 @@ export function countActiveCommonFishInGroup(fishes, groupId) {
   ).length;
 }
 
-export function countActiveCommonGroups(fishes) {
+export function getActiveGroupIds(fishes) {
   const groupIds = new Set();
 
   fishes.forEach((fish) => {
@@ -42,14 +39,62 @@ export function countActiveCommonGroups(fishes) {
     }
   });
 
-  let activeCount = 0;
-  groupIds.forEach((groupId) => {
-    if (countActiveCommonFishInGroup(fishes, groupId) > GROUP_DEPLETED_THRESHOLD) {
-      activeCount += 1;
+  return [...groupIds].filter(
+    (groupId) =>
+      countActiveCommonFishInGroup(fishes, groupId) > GROUP_DEPLETED_THRESHOLD
+  );
+}
+
+export function countActiveCommonGroups(fishes) {
+  return getActiveGroupIds(fishes).length;
+}
+
+function getGroupAnchor(fishes, groupId) {
+  const members = fishes.filter(
+    (fish) => fish.type === "common" && fish.active && fish.groupId === groupId
+  );
+
+  if (members.length === 0) {
+    return null;
+  }
+
+  const x = members.reduce((sum, fish) => sum + fish.x, 0) / members.length;
+  const y = members.reduce((sum, fish) => sum + fish.y, 0) / members.length;
+  return { x, y };
+}
+
+function distanceToShark(x, y, sharkX, sharkY) {
+  return Math.hypot(x - sharkX, y - sharkY);
+}
+
+function countSchoolsNearShark(fishes, sharkX, sharkY) {
+  return getActiveGroupIds(fishes).filter((groupId) => {
+    const anchor = getGroupAnchor(fishes, groupId);
+    if (!anchor) {
+      return false;
+    }
+    return distanceToShark(anchor.x, anchor.y, sharkX, sharkY) <= FISH_VICINITY_RADIUS;
+  }).length;
+}
+
+function findFarthestActiveGroup(fishes, sharkX, sharkY) {
+  let farthestGroupId = null;
+  let farthestDistance = FISH_VICINITY_RADIUS;
+
+  getActiveGroupIds(fishes).forEach((groupId) => {
+    const anchor = getGroupAnchor(fishes, groupId);
+    if (!anchor) {
+      return;
+    }
+
+    const dist = distanceToShark(anchor.x, anchor.y, sharkX, sharkY);
+    if (dist > farthestDistance) {
+      farthestDistance = dist;
+      farthestGroupId = groupId;
     }
   });
 
-  return activeCount;
+  return farthestGroupId;
 }
 
 export function spawnFishGroupAhead(shark, fishes, nextGroupId, spawnIndex, totalSpawns) {
@@ -59,49 +104,67 @@ export function spawnFishGroupAhead(shark, fishes, nextGroupId, spawnIndex, tota
   return nextGroupId + 1;
 }
 
-function ensureMinimumGroups(shark, fishes, domain) {
-  let nextGroupId = domain.nextGroupId ?? 0;
-  let spawned = 0;
+function relocateSchool(shark, fishes, groupId, spawnIndex, totalSpawns) {
+  const anchor = getGroupSpawnAnchor(shark, spawnIndex, totalSpawns);
 
-  while (
-    countActiveCommonGroups(fishes) < MIN_ACTIVE_GROUPS &&
-    spawned < MIN_ACTIVE_GROUPS
-  ) {
-    nextGroupId = spawnFishGroupAhead(
-      shark,
-      fishes,
-      nextGroupId,
-      spawned,
-      MIN_ACTIVE_GROUPS
-    );
-    spawned += 1;
-  }
+  fishes.forEach((fish) => {
+    if (fish.type !== "common" || !fish.active || fish.groupId !== groupId) {
+      return;
+    }
 
-  domain.nextGroupId = nextGroupId;
+    fish.x = anchor.x + (Math.random() - 0.5) * 80;
+    fish.y = anchor.y + (Math.random() - 0.5) * 50;
+    fish.speedX = (Math.random() - 0.5) * 0.9;
+    fish.speedY = (Math.random() - 0.5) * 0.7;
+  });
 }
 
-export function maintainFishGroups(shark, fishes, domain, deltaSec) {
-  ensureMinimumGroups(shark, fishes, domain);
+function ensureVicinitySchools(shark, fishes, domain) {
+  let nearbyCount = countSchoolsNearShark(fishes, shark.x, shark.y);
+  let spawnIndex = 0;
+  let safety = 0;
 
-  domain.groupSpawnTimer = (domain.groupSpawnTimer ?? 0) + deltaSec;
+  while (
+    nearbyCount < FISH_TARGET_SCHOOL_COUNT &&
+    safety < FISH_TARGET_SCHOOL_COUNT * 3
+  ) {
+    safety += 1;
+    const before = nearbyCount;
+    const farGroupId = findFarthestActiveGroup(fishes, shark.x, shark.y);
 
-  if (domain.groupSpawnTimer < GROUP_SPAWN_INTERVAL) {
-    return;
+    if (farGroupId !== null) {
+      relocateSchool(
+        shark,
+        fishes,
+        farGroupId,
+        spawnIndex,
+        FISH_TARGET_SCHOOL_COUNT
+      );
+      nearbyCount = countSchoolsNearShark(fishes, shark.x, shark.y);
+      if (nearbyCount > before) {
+        spawnIndex += 1;
+        continue;
+      }
+    }
+
+    domain.nextGroupId = spawnFishGroupAhead(
+      shark,
+      fishes,
+      domain.nextGroupId ?? 0,
+      spawnIndex,
+      FISH_TARGET_SCHOOL_COUNT
+    );
+    nearbyCount = countSchoolsNearShark(fishes, shark.x, shark.y);
+    spawnIndex += 1;
+
+    if (nearbyCount <= before) {
+      break;
+    }
   }
+}
 
-  domain.groupSpawnTimer = 0;
-
-  if (countActiveCommonGroups(fishes) >= MAX_ACTIVE_GROUPS) {
-    return;
-  }
-
-  domain.nextGroupId = spawnFishGroupAhead(
-    shark,
-    fishes,
-    domain.nextGroupId ?? 0,
-    0,
-    1
-  );
+export function maintainFishGroups(shark, fishes, domain) {
+  ensureVicinitySchools(shark, fishes, domain);
 }
 
 export function createInitialEntities(shark, spawnCenter = getDefaultSpawnCenter()) {
@@ -113,13 +176,12 @@ export function createInitialEntities(shark, spawnCenter = getDefaultSpawnCenter
 
   const bombs = createInitialBombs(spawnCenter.x, spawnCenter.y);
 
-  const domain = { nextGroupId: 0, groupSpawnTimer: 0 };
-  ensureMinimumGroups(shark, fishes, domain);
+  const domain = { nextGroupId: 0 };
+  ensureVicinitySchools(shark, fishes, domain);
 
   return {
     fishes,
     bombs,
     nextGroupId: domain.nextGroupId,
-    groupSpawnTimer: 0,
   };
 }

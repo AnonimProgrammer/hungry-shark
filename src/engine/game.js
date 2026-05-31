@@ -102,7 +102,6 @@ export function resetGame(game, shark, domain, input) {
   domain.fishes = entities.fishes;
   domain.bombs = entities.bombs;
   domain.nextGroupId = entities.nextGroupId;
-  domain.groupSpawnTimer = 0;
 
   updateCamera(domain.camera, shark.x, shark.y);
 
@@ -140,7 +139,7 @@ function update(game, shark, domain, input, dom, deltaSec) {
     fish.update();
     recycleDistantPoisonFish(fish, shark.x, shark.y, ENTITY_RECYCLE_DISTANCE);
   });
-  maintainFishGroups(shark, domain.fishes, domain, deltaSec);
+  maintainFishGroups(shark, domain.fishes, domain);
   maintainBombs(shark, domain.bombs, deltaSec);
 
   if (shark.hitFlash > 0) {
