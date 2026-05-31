@@ -21,23 +21,22 @@ Feature prompts and iteration notes are indexed in **[AI_DIARY.md](AI_DIARY.md)*
 ### Game
 
 - [Introduction](docs/introduction.md) — description, world zones, entity list, Excalidraw sketch.
-- [How to play](docs/how-to-play.md) — controls, objective, win/lose, hunger, scoring, boost, HUD.
+- [How to play](docs/how-to-play.md) — controls, menus, objective, hunger, scoring, boost, HUD.
 
 ### Architecture & design
 
-- [Project design](docs/project-design.md) — full blueprint: rules changelog, entity specs, game loop, **technical architecture (OOP + functional hybrid, §5)**, constants, implementation and testing checklists.
+- [Project design](docs/project-design.md) — full blueprint: rules, entity specs, spawn systems, game loop, **technical architecture (OOP + functional hybrid, §5)**, constants, implementation status.
 
 ### Development
 
-- [AI diary](AI_DIARY.md) — index of AI-assisted work (16+ entries).
+- [AI diary](AI_DIARY.md) — index of AI-assisted work (25+ entries).
 - [`prompts/`](prompts/) — per-feature prompt logs linked from the diary.
 
 ---
 
 ## What’s next
 
-Design targets in [Project Design](docs/project-design.md) are ahead of code in a few areas:
+Planned work (see [Project design §9](docs/project-design.md#9-planned-work)):
 
-- **Boost meter** — drain only while boosting, 2 s idle before regen, 10 s empty→full refill (replace fixed burst/cooldown).
-- **HUD** — top-right HP/boost bars and settings menu; best score off in-game HUD only (start/game-over unchanged).
+- **[DEV] Sound effects** — eat, damage, explosion, UI feedback (music toggle exists as mock only today).
 - **Future gameplay** — humans at the surface, aggressive predator fish (see [introduction](docs/introduction.md)).

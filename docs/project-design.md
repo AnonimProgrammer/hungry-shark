@@ -6,25 +6,27 @@ Blueprint for a browser-based, 2D underwater survival game built strictly with *
 
 **Related docs:** [Introduction](introduction.md) (overview & entities) · [How to play](how-to-play.md) (controls & objectives) · [README](../README.md) (documentation index) · [AI diary](../AI_DIARY.md)
 
-**Design revision:** Enhanced game rules — fish group spawning, strike-based scoring, poison over time, updated hunger/boost mechanics, and HUD redesign.
+**Last updated:** 2026-05-31 — reflects implemented boost meter, HUD, menus, gravity, vicinity spawning, and tutorial.
 
 ---
 
-## 0. Rules Changelog (Current → Target)
+## 0. Implementation Status
 
-| System | Current (implemented) | Target (this document) |
-|--------|----------------------|-------------------------|
-| **Common fish** | One school at start; eaten fish **respawn individually** near shark | Fish exist only in **groups**; eaten fish are **gone forever**; **new groups** spawn ahead as shark explores |
-| **Poisonous fish** | Instant −20 HP on contact | **20 HP over 4 seconds** (DOT); shark **light green** while poisoned |
-| **Hunger** | 5 s without food → −10 HP/s | **10 s** without food → **−5 HP/s**; shark **light red** while starving |
-| **HP recovery** | +5 HP instantly on eating common fish | **No instant heal**; regen **+10 HP/s** after **2 s** clear of starvation, poison, and damage (cap 100) |
-| **Score** | Time-based (`+deltaSec` every frame) | **Fish strike chain** — 5, 10, 20, 40, 80 max per fish (2× within 2 s, capped at 80) |
-| **Boost** | Fixed 2.5 s burst + 5 s cooldown; cannot stop early | **Meter-based** — drains while active, **stops when not boosting**; regen after **2 s idle**, **10 s** empty→full |
-| **HUD** | Top-left text (HP number, hunger timer, best score) | **Top-right** bars (HP red, boost dark blue), golden score, settings menu |
-| **Best score** | Shown on HUD + start/game-over screens + localStorage | **Removed from in-game HUD only**; kept on start/game-over screens (localStorage persists best strike score) |
-| **Bombs** | Explosion VFX, −30 HP, respawn delay | **Unchanged** — approved as-is |
-
-Use §7 as the implementation checklist when updating code.
+| System | Status | Notes |
+|--------|--------|-------|
+| Fish groups (no common respawn) | **Done** | 6 active schools within 4000 px; ahead spawn 900–1500 px; relocate far schools |
+| Poison DOT + lionfish visual | **Done** | 20 HP / 4 s; light green glow |
+| Hunger / HP regen | **Done** | 10 s grace, −5 HP/s; +10 HP/s after 2 s safe window |
+| Strike score | **Done** | Chain 5→80, 2 s window |
+| Boost meter | **Done** | Double-click + hold LMB; drain while boosting; 2 s idle → 10 s regen |
+| HUD (top-right bars) | **Done** | HP, boost, golden score; pause button |
+| Main menu + How to play | **Done** | 3-slide tutorial; mock shark shop |
+| Pause / Game over | **Done** | Quit to menu on both; mock music toggle |
+| Multi-bomb vicinity | **Done** | 5 bombs / 2000 px; 500 px min spacing; 10 s respawn |
+| Sky gravity + splash depth | **Done** | Ballistic arcs; dive depth = jump height |
+| Water depth gradient | **Done** | Lighter at surface, darker at seabed |
+| Shark / fish sprites | **Done** | `shark.png`; simple fish + lionfish drawings |
+| Sound effects / music | **Planned** | Toggle UI mock only — see §9 |
 
 ---
 
@@ -32,12 +34,12 @@ Use §7 as the implementation checklist when updating code.
 
 The game uses a **dynamic world** with a camera that follows the shark. The viewport is a window into unbounded ocean coordinates — entities move in world space; only the camera position is fixed relative to the screen.
 
-* **Sky Zone (Top Area):** Region above the ocean surface. The shark can swim into the sky. No gravity — movement is not pulled downward in the sky zone; seabed collision still applies below.
-* **Water Surface Line:** Horizontal world coordinate separating Sky from the main play area.
-* **Water Zone (Main Play Area):** Light-blue canvas region where gameplay happens. Fish **groups** spawn ahead of the shark; hazards float in the lower water column.
-* **Bottom Line & Seabed (Floor Area):** Dark-brown solid boundary. The shark’s downward coordinate is clamped here.
+* **Sky Zone:** Region above `WATER_SURFACE_Y`. The shark can jump out of the water. **Gravity** (`GRAVITY = 520 px/s²`) applies — ballistic motion, no mouse swim control while airborne. Re-entry continues momentum underwater to a depth equal to peak jump height above the surface.
+* **Water Surface Line:** Horizontal world coordinate separating sky from the main play area.
+* **Water Zone:** Depth-tinted gradient (`#81d4fa` → `#4fc3f7` → `#01579b` from surface to seabed). Fish schools and hazards spawn relative to the shark.
+* **Seabed:** Dark-brown floor at `SEABED_WORLD_Y`. Shark `y` is clamped here.
 
-**Spawn philosophy:** Content is placed relative to the shark’s world position and travel direction. New fish **groups** appear in unexplored areas ahead — not as individual respawns at eaten locations. The map should feel populated by schools the player discovers while moving, not by endless local respawns around the shark.
+**Spawn philosophy:** Content is kept in a **vicinity** around the shark. Fish schools and bombs that fall outside the monitored radius are **relocated** or **respawned** so the world stays populated as the player explores.
 
 ---
 
@@ -45,314 +47,132 @@ The game uses a **dynamic world** with a camera that follows the shark. The view
 
 ### Player Character: The Shark
 
-* **Visual:** Animated body shape (ellipse/polygon) rotating on its center point toward the mouse cursor.
-* **Core stats:**
-    * **HP:** `0`–`100` (starts at `100`).
-    * **Hunger timer:** Seconds since last common-fish meal (see §3.1).
-    * **HP regen timer:** Seconds since last blocking condition cleared — gates delayed heal (see §3.1).
-    * **Boost meter:** `0`–`100`% depletable/regenerating resource (see §3.2).
-    * **Poison timer:** Remaining DOT duration when poisoned (see §3.4).
-    * **Strike chain timer:** Countdown for score multiplier window (see §3.3).
-* **Status tints** (body color override while effect is active):
-    * **Light red** (`#ef9a9a` or similar) — starvation drain active.
-    * **Light green** (`#a5d6a7` or similar) — poison DOT active.
-    * Default body color when neither applies.
-    * *If both active simultaneously:* poison green takes visual priority (documented choice for implementation).
-* **Movement:**
-    * **Mouse aim:** Head/nose rotates toward cursor.
-    * **LMB hold:** Swim forward along current angle toward cursor at base speed (or boost speed when boosting).
-    * **Double-click:** Engage boost mode while meter > 0 (see §3.2).
+* **Visual:** `assets/images/shark.png` sprite (`SHARK_SPRITE_HEIGHT = 180` in-game); horizontal flip when swimming left. Oval body-aligned glow for status effects.
+* **Core stats:** HP 0–100, hunger timer, HP regen timer, boost meter 0–100%, poison timer, strike chain timer.
+* **Status glows:** light red (starving), light green (poisoned), red flash (damage).
+* **Movement (water):** Mouse aim; LMB hold swim; double-click + **hold LMB** boost at 2× while meter > 0.
+* **Movement (sky):** Velocity-based arc; angle follows trajectory; boost disabled.
 
-### Consumables: Fish Varieties
+### Common Fish (Orange — School Groups)
 
-#### Common Fish (Orange — School Groups)
+* **Group size:** `SCHOOL_SIZE = 12`.
+* **Vicinity:** `FISH_TARGET_SCHOOL_COUNT = 6` active schools within `FISH_VICINITY_RADIUS = 4000` px of the shark.
+* **Spawn ahead:** `GROUP_SPAWN_AHEAD_MIN/MAX = 900–1500` px, biased in travel direction (`GROUP_SPAWN_ANGLE_SPREAD = 0.75`).
+* **Active group:** More than `GROUP_DEPLETED_THRESHOLD = 3` living fish.
+* **On eat:** Fish removed permanently; hunger reset; strike score; no instant HP heal.
+* **Replenishment:** `maintainFishGroups()` in `fishGroups.js` — relocate far schools or spawn new groups when nearby count < 6.
 
-Common fish never exist as isolated spawns. They always belong to a **group**.
+### Poisonous Fish (Lionfish — Solo)
 
-**Group lifecycle:**
+* **Count:** `POISONOUS_FISH_COUNT = 2`.
+* **Visual:** `drawLionfish()` — striped hazard sprite.
+* **Damage:** 20 HP over 4 s DOT; refresh on re-contact.
+* **Respawn:** Solo respawn at distance after eaten; `recycleDistantPoisonFish()` beyond `ENTITY_RECYCLE_DISTANCE`.
 
-1. **Spawn together** — A group of `SCHOOL_SIZE` fish (default: 6–8) appears at one world anchor point, placed **ahead of the shark** in the direction of recent travel (or default forward if stationary).
-2. **Disperse locally** — Each fish immediately swims toward a slightly different nearby position within a small radius of the anchor (~80 px horizontal, ~50 px vertical spread). They continue autonomous drift/swim within water bounds. This mimics a school breaking apart slightly while staying loosely clustered.
-3. **On eat** — Fish is consumed and **removed permanently** (`active = false`, no respawn). **No individual respawn at close distance after death.**
-4. **Group replenishment** — When the shark moves into new territory, **new groups** spawn ahead. Maintain a target number of active groups in the “frontier” around the shark (implementation: spawn when group count drops below threshold or shark travels far enough from last spawn).
+### Hazards: Underwater Bombs
 
-**On eat effects:**
-* Reset hunger timer to `0` (ends starvation immediately — one of three regen blockers cleared; see §3.1).
-* Award strike score (§3.3).
-* **No instant HP restore** — recovery is passive regen while fed, not a direct heal on contact.
-
-#### Poisonous Fish (Green — Solo)
-
-* **Count:** Intentionally small (default: 2) — rare hazard, not a swarm.
-* **Behavior:** Swim **alone**, not in schools. Solo spawn and optional solo respawn at distance after eaten (small population maintained).
-* **Poison damage:** Contact applies **20 HP total over 4 seconds** as damage-over-time — **not** instant −20.
-    * Recommended tick: **5 HP/s for 4 s** (or smooth fractional drain totalling 20).
-    * Re-contact while already poisoned: **refresh** the 4 s duration (reset DOT, do not stack beyond 20 per application cycle).
-* **Visual feedback:** Shark **light green** for the duration of active poison DOT.
-* **On eat:** Fish consumed and removed; may respawn at a distant solo position (unchanged population target).
-
-### Hazards: Underwater Bomb
-
-* **Visual:** Dark, spiky circular object.
-* **Behavior:** Slow-moving or static in the lower water column.
-* **Status:** **Approved as-is** — spawn placement, explosion VFX, respawn delay (`BOMB_RESPAWN_DELAY = 5 s`), and contact damage (−30 HP) remain unchanged unless a future pass says otherwise.
+* **Count:** `BOMB_TARGET_COUNT = 5` within `BOMB_VICINITY_RADIUS = 2000` px.
+* **Spacing:** ≥ `BOMB_MIN_SEPARATION = 500` px between bombs; spawn ring 500–2000 px from shark.
+* **Damage:** −30 HP on contact; large explosion VFX (`BOMB_EXPLOSION_MAX_RADIUS = 120`).
+* **Respawn:** `BOMB_RESPAWN_DELAY = 10` s after explosion; `maintainBombs()` in `bombGroups.js` relocates far bombs when vicinity count drops.
 
 ### Future Extensions (Out of Scope)
 
-* **Humans:** Surface swimmers or boats — high-risk, high-reward targets.
+* **Humans:** Surface swimmers or boats.
 * **Advanced Bad Fish:** Aggressive predators that chase the player.
 
 ---
 
 ## 3. Game State & Logic Rules
 
-```
-                       [ MOUSE MOVEMENT ]
-                                │
-                                ▼
-                     Shark Rotates to Cursor
-                                │
-         ┌──────────────────────┴──────────────────────┐
-   [ LMB HOLD ]                                [ DOUBLE CLICK ]
-         │                                             │
-         ▼                                             ▼
-Standard Swim Speed                         Toggle / Engage Boost
-         │                                    (drains meter while active)
-         └──────────────────────┬──────────────────────┘
-                                ▼
-                     [ SHARK COORDINATES ]
-                                │
-       ┌────────────────────────┼────────────────────────┐
-       ▼                        ▼                        ▼
-  (Explore World)         (Y > Seabed)            (Touch Fish/Bomb)
-       │                        │                        │
-       ▼                        ▼                        ▼
-  Spawn New Fish Groups    Stop Y-Movement         Trigger Collision
-  Ahead of Shark           (Lock to Seabed)        (Score / HP / DOT)
-```
+(Summary — see [How to play](how-to-play.md) for player-facing copy.)
 
 ### 3.1 Hunger & HP Regeneration
 
-#### Starvation (hunger)
-
-| Rule | Value |
-|------|-------|
-| Grace period | **10 seconds** without eating a common fish |
-| Starvation drain | **−5 HP per second** once grace period expires |
-| Status signal | Shark **light red** while starvation drain is active |
-| Reset | Eating any common fish sets hunger timer to `0` and stops drain immediately |
-
-**Starving** = `hungerTimer ≥ HUNGER_LIMIT` (10 s since last common-fish meal).
-
-#### HP regeneration
-
-Regen is **passive** — no instant heal on eating fish. Recovery only runs when the shark has been **safe** for long enough.
-
-| Rule | Value |
-|------|-------|
-| Regen rate | **+10 HP per second** once conditions met |
-| Regen delay | **2 seconds** continuously clear of all blocking conditions (below) |
-| Cap | HP clamped to **100** |
-
-**Regen is blocked** while any of these apply:
-
-| Blocker | Meaning |
-|---------|---------|
-| **Starving** | `hungerTimer ≥ HUNGER_LIMIT` (10 s without common fish) |
-| **Poisoned** | Active poison DOT (`poisonTimer > 0`) |
-| **Damaged** | Any HP loss this frame (bomb hit, poison tick, starvation tick) |
-
-All three must be **absent for 2 full seconds** before regen begins. Any blocker starting or any HP loss **resets** the regen timer to `0`.
-
-**Pseudocode:**
-
-```
-onHpLoss(amount):                  // bomb, poison tick, starvation tick
-  shark.hp = max(0, shark.hp - amount)
-  hpRegenTimer = 0
-
-onPoisonContact():
-  poisonTimer = POISON_DURATION     // 4 s — blocks regen entire duration
-  hpRegenTimer = 0
-
-onEatCommonFish():
-  hungerTimer = 0                   // ends starvation only; does not skip poison/damage blocks
-
-eachFrame(deltaSec):
-  hungerTimer += deltaSec
-  const starving = hungerTimer >= HUNGER_LIMIT
-  const poisoned = poisonTimer > 0
-
-  if (starving) shark.hp -= STARVATION_DRAIN * deltaSec   // also triggers onHpLoss reset
-  if (poisoned) applyPoisonTick(deltaSec)                   // ticks trigger onHpLoss reset
-
-  if (starving || poisoned || hpLostThisFrame):
-    hpRegenTimer = 0
-  else:
-    hpRegenTimer += deltaSec
-    if (hpRegenTimer >= HP_REGEN_DELAY && shark.hp < 100):
-      shark.hp = min(100, shark.hp + HP_REGEN_RATE * deltaSec)
-```
-
-**Examples:**
-* Eat fish at 50 HP while poisoned → hunger resets, but regen stays off until poison ends **plus** 2 s.
-* Bomb hit at 80 HP → regen off; after 2 s with no starvation/poison/damage, regen +10/s toward 100.
-* Starvation ends on eat → still need 2 s without poison or new damage before regen starts.
-
-Starvation, poison, and bomb damage remain independent sources of HP loss — they can stack in the same frame.
+Starvation after **10 s** without common fish → **−5 HP/s**. Regen **+10 HP/s** after **2 s** clear of starvation, poison, and damage. No instant heal on eat.
 
 ### 3.2 Boost Mechanic
 
-Replaces the old timed burst (`BOOST_DURATION` / `BOOST_COOLDOWN` state machine).
+Double-click **arms** boost; **hold LMB** while swimming to drain meter at 2× speed. Release LMB stops boost drain. **2 s** idle → **10 s** full regen. Boost disabled while airborne.
 
-| Rule | Value |
-|------|-------|
-| Activation | **Double-click** engages boost (2× swim speed while meter > 0) |
-| Consumption | Meter **decreases only while boost is actively in use** |
-| Stop | When boost is **not** in use, consumption **stops immediately** — meter does not keep draining |
-| Regen delay | **2 seconds** after last boost use before regeneration begins |
-| Regen duration | **10 seconds** to refill from empty to full |
-| Depletion | At 0%, boost speed unavailable until partially or fully regenerated |
+### 3.3 Strike Scoring
 
-**Boost state machine (target):**
-
-```
-                    ┌─────────────────────────────────────┐
-                    │            IDLE (not boosting)       │
-                    │  meter holds current level           │
-                    │  after 2s idle → REGENERATING        │
-                    └──────────┬──────────────▲────────────┘
-                               │              │
-                    double-click│              │ meter full
-                    meter > 0  │              │ or player stops
-                               ▼              │
-                    ┌─────────────────────────────────────┐
-                    │         BOOSTING (active)            │
-                    │  2× speed, meter drains per frame    │
-                    └──────────┬──────────────────────────┘
-                               │ meter = 0
-                               ▼
-                    ┌─────────────────────────────────────┐
-                    │         DEPLETED                     │
-                    │  normal speed only; regen after 2s   │
-                    └─────────────────────────────────────┘
-```
-
-**Implementation note:** Double-click toggles boost on. Boost turns off when the player double-clicks again **or** when the meter hits 0 — either event stops drain. Regeneration clock starts when boosting stops.
-
-### 3.3 Strike Scoring (Fish-Based Score)
-
-Score is **not** time-based. Points come **only** from eating common fish.
-
-| Rule | Value |
-|------|-------|
-| Base bonus (first fish in chain) | **+5** points |
-| Chain multiplier | Each consecutive fish within **2 s** doubles the previous bonus |
-| Per-fish cap | **+80** maximum (sequence: 5 → 10 → 20 → 40 → 80 → 80 …) |
-| Chain window | **2 seconds** — timer resets on each eat; if it expires, chain resets to +5 |
-
-**Pseudocode:**
-
-```
-onEatCommonFish():
-  if strikeChainTimer > 0:
-    bonus = min(80, lastBonus * 2)
-  else:
-    bonus = 5
-  score += bonus
-  lastBonus = bonus
-  strikeChainTimer = 2.0 s
-```
++5 base; ×2 chain within 2 s; cap +80 per fish. Score is points only (not time-based).
 
 ### 3.4 Poison DOT
 
-| Rule | Value |
-|------|-------|
-| Total damage | **20 HP** |
-| Duration | **4 seconds** |
-| Tick rate | **5 HP/s** (or equivalent smooth drain) |
-| Status signal | Shark **light green** while `poisonTimer > 0` |
-| Re-contact | Refresh duration to 4 s; do not stack multiple concurrent DOT instances |
+20 HP / 4 s; light green glow; blocks regen.
 
-### 3.5 Fish Group Spawning (Algorithm Sketch)
+### 3.5 Fish Group Spawning (Implemented)
 
 ```
-SCHOOL_SIZE = 12
-MIN_ACTIVE_GROUPS = 2           // at game start / always topped up
-MAX_ACTIVE_GROUPS = 6
-GROUP_DEPLETED_THRESHOLD = 3    // ≤3 living fish → group counts as eaten
-GROUP_SPAWN_INTERVAL = 2 s
-GROUP_SPAWN_AHEAD_DISTANCE = 900–1500 px from shark, biased in travel direction
+FISH_TARGET_SCHOOL_COUNT = 6
+FISH_VICINITY_RADIUS = 4000
+GROUP_DEPLETED_THRESHOLD = 3
+GROUP_SPAWN_AHEAD_MIN/MAX = 900 / 1500
 
-eachFrame(deltaSec):
-  ensure activeGroups >= MIN_ACTIVE_GROUPS (spawn if below)
-  groupSpawnTimer += deltaSec
-  if groupSpawnTimer >= 2s and activeGroups < MAX_ACTIVE_GROUPS:
-    spawn one new school ahead (12 fish)
-
-countActiveGroup(groupId):
-  living = fish in group with active == true
-  active group only if living > GROUP_DEPLETED_THRESHOLD  // 4+ fish
-
-onEatCommonFish(fish):
-  fish.active = false
-  // NO respawnFish() for common fish
+eachFrame:
+  maintainFishGroups(shark, fishes, domain)
+    count active schools with anchor within 4000 px of shark
+    while count < 6:
+      relocate farthest active school into vicinity (same ahead rules)
+      else spawn new school ahead via getGroupSpawnAnchor()
 ```
 
-**Remove:** `respawnFish()` for common fish in collision handler. **Remove or repurpose:** `recycleDistantFish()` — distant eaten fish should not recycle; only living fish in active groups matter.
+**Removed:** per-fish `respawnFish()` for common fish; timed `GROUP_SPAWN_INTERVAL` throttle (immediate vicinity fill).
 
-Poisonous fish may still use distance-based recycle or solo respawn — small count, unchanged feel.
+### 3.6 Bomb Spawning (Implemented)
 
-### 3.6 Boundary Enforcement
+```
+BOMB_TARGET_COUNT = 5
+BOMB_VICINITY_RADIUS = 2000
+BOMB_MIN_SEPARATION = 500
+BOMB_RESPAWN_DELAY = 10
 
-* If `Shark.y > Seabed.y`: clamp `Shark.y = Seabed.y`.
-* Sky zone: no gravity (see §1).
+eachFrame:
+  maintainBombs(shark, bombs, deltaSec)
+    count active bombs within 2000 px
+    while count < 5:
+      relocate farthest bomb beyond 2000 px into valid ring position
+```
 
-### 3.7 Win / Loss Conditions
+### 3.7 Boundary & Gravity
 
-* **Loss:** `Shark.hp ≤ 0` from starvation, poison, or bomb → Game Over overlay with **final score** (strike points, not seconds).
-* **Win:** No fixed win state — survive and maximize score through efficient school hunting.
+* Seabed: clamp `Shark.y`.
+* Sky: gravity on `velocityY`; horizontal velocity preserved; splash dive to `WATER_SURFACE_Y + peakAirHeight`.
+
+### 3.8 Win / Loss
+
+* **Loss:** HP ≤ 0 → Game Over (Play Again / Quit to menu).
+* **Win:** No fixed win — maximize strike score.
 
 ---
 
-## 4. HUD & Settings UI
+## 4. UI & Menus
 
-All in-game HUD elements anchor to the **top-right** of the viewport (not top-left).
+### 4.1 In-Game HUD (top-right)
 
-### 4.1 Layout (top → bottom, right-aligned)
+HP bar (red), boost bar (dark blue), golden ★ score, circular pause (‖). No best score during run.
 
-```
-                              [=========] HP  [⚙]
-                              [=========]
-                              Score: 1234
-                              (golden)
-```
+### 4.2 Main Menu
 
-| Element | Specification |
-|---------|---------------|
-| **HP bar** | Horizontal bar, **red** fill on dark track. Label `HP` immediately to the **right** of the bar. **No numeric HP.** Concept: `[=============] HP` |
-| **Boost bar** | Directly **below** HP bar. **Dark blue** fill (`#1565c0` or similar) on dark track. Same dimensions as HP bar. **No numeric text.** |
-| **Score** | **Below** boost bar. **Golden** font (`#ffd700` / `#ffc107`). Shows current run strike score (integer). |
-| **Best score** | **Not shown** on the in-game HUD. |
-| **Settings ⚙** | Icon/button to the **right** of the HP bar row. Opens overlay/panel with three items |
+Title, animated menu shark, best score, settings gear (mock music), **How to play?** (3 slides), mock shark shop, **Play**.
 
-### 4.2 Settings Menu (Mock)
+### 4.3 Pause Menu
 
-| Option | Behavior |
-|--------|----------|
-| **Continue game** | Closes menu; game resumes (pause while menu open — implementation choice) |
-| **Restart** | Calls `resetGame()` — full state reset, returns to playing or start per existing flow |
-| **Turn off music** | Mock toggle — no audio system yet; button exists for future wiring |
+Resume, Quit to menu, mock Turn off music.
 
-### 4.3 Game Over Screen (updated copy)
+### 4.4 Game Over
 
-* Show **final score** as points: e.g. `Score: 340` — not `Survived N seconds`.
-* **Keep best score** line: e.g. `Best: 1200` (highest strike score from localStorage).
+Final score, best score, **Play Again**, **Quit to menu**.
 
-### 4.4 Start Screen (updated copy)
+### 4.5 How to Play Tutorial
 
-* Update instructions to reflect: 10 s hunger window, strike scoring, boost meter, fish schools.
-* **Keep best score** display: e.g. `Best: 1200`.
+Slide 1: HUD callouts. Slide 2: shark chasing fish. Slide 3: bomb + lionfish split panels.
+
+### 4.6 Audio (Mock)
+
+Music toggle in pause menu and main settings — **no audio playback**. Sound effects not implemented — see §9.
 
 ---
 
@@ -360,90 +180,108 @@ All in-game HUD elements anchor to the **top-right** of the viewport (not top-le
 
 ### Program Structure
 
-Hybrid **OOP + functional**:
+Hybrid **OOP + functional:**
 
 * **OOP:** `Shark`, `Fish`, `Bomb` — position, state, `.draw(ctx)`.
-* **Functional:** Input, collision, timers, game state, `requestAnimationFrame` loop.
+* **Functional:** Input, collision, timers, `maintainFishGroups`, `maintainBombs`, game state, `requestAnimationFrame` loop.
+* **Pages:** HTML fragments in `pages/` loaded via `fetch()` (main menu, pause, settings, how-to-play).
 
 ### Animation Frame Loop (each frame)
 
-1. **Clear canvas** — `ctx.clearRect()`.
-2. **Process input** — mouse position, LMB, double-click / boost toggle.
-3. **Update logic** — movement, boost meter drain/regen, hunger timer, HP regen timer, poison DOT, strike chain timer, fish group spawning, entity updates.
-4. **Evaluate collisions** — score, HP, DOT, fish removal (no common-fish respawn).
-5. **Render** — background, entities with status tints, top-right HUD, settings affordance.
+1. Clear canvas; draw world-anchored water gradient background.
+2. Process input (mouse, LMB, double-click, pause hit test).
+3. Update shark movement (water swim or air physics), boost meter, timers, fish/bomb vicinity systems, entity updates.
+4. Evaluate collisions (fish eat, poison, bombs).
+5. Render entities, HUD, overlays when paused/menu.
 
 ---
 
-## 6. Constants Reference (Target)
+## 6. Constants Reference (Current)
 
-| Constant | Target value | Notes |
-|----------|--------------|-------|
-| `HUNGER_LIMIT` | `10` (seconds) | was `5` |
-| `STARVATION_DRAIN` | `5` (HP/s) | was `10` |
-| `HP_REGEN_DELAY` | `2` (seconds) | clear of starvation, poison, and damage before regen |
-| `HP_REGEN_RATE` | `10` (HP/s) | while regen active |
-| `POISON_TOTAL_DAMAGE` | `20` | was instant |
-| `POISON_DURATION` | `4` (seconds) | new |
-| `POISON_TICK_RATE` | `5` (HP/s) | optional helper |
-| `STRIKE_BASE_BONUS` | `5` (points) | first fish in chain |
-| `STRIKE_MAX_BONUS` | `80` (points) | cap per fish |
-| `STRIKE_CHAIN_WINDOW` | `2` (seconds) | new |
-| `STRIKE_MULTIPLIER` | `2` | per consecutive fish |
-| `BOOST_REGEN_DELAY` | `2` (seconds) | replaces cooldown |
-| `BOOST_REGEN_DURATION` | `10` (seconds) | replaces fixed burst refill |
-| `BOOST_MULTIPLIER` | `2` | unchanged |
-| `BOMB_DAMAGE` | `30` | unchanged |
-| `BOMB_RESPAWN_DELAY` | `5` | unchanged |
-| `SCHOOL_SIZE` | `12` | fish per group |
-| `MIN_ACTIVE_GROUPS` | `2` | minimum at start |
-| `MAX_ACTIVE_GROUPS` | `6` | cap on concurrent active groups |
-| `GROUP_DEPLETED_THRESHOLD` | `3` | ≤3 fish → group inactive |
-| `GROUP_SPAWN_INTERVAL` | `2` (seconds) | timed spawn |
-| `GROUP_SPAWN_AHEAD_MIN/MAX` | `900` / `1500` (px) | spawn distance |
-| `POISONOUS_FISH_COUNT` | `2` | unchanged |
+| Constant | Value | Notes |
+|----------|-------|-------|
+| `HUNGER_LIMIT` | `10` | seconds |
+| `STARVATION_DRAIN` | `5` | HP/s |
+| `HP_REGEN_DELAY` | `2` | seconds |
+| `HP_REGEN_RATE` | `10` | HP/s |
+| `POISON_DAMAGE` | `20` | total over 4 s |
+| `POISON_DURATION` | `4` | seconds |
+| `STRIKE_BASE_BONUS` | `5` | points |
+| `STRIKE_MAX_BONUS` | `80` | cap per fish |
+| `STRIKE_CHAIN_WINDOW` | `2` | seconds |
+| `BOOST_MULTIPLIER` | `2` | |
+| `BOOST_REGEN_DELAY` | `2` | seconds |
+| `BOOST_REGEN_DURATION` | `10` | seconds |
+| `GRAVITY` | `520` | px/s² (sky) |
+| `BOMB_DAMAGE` | `30` | |
+| `BOMB_RESPAWN_DELAY` | `10` | seconds |
+| `BOMB_TARGET_COUNT` | `5` | |
+| `BOMB_VICINITY_RADIUS` | `2000` | px |
+| `BOMB_MIN_SEPARATION` | `500` | px |
+| `FISH_TARGET_SCHOOL_COUNT` | `6` | |
+| `FISH_VICINITY_RADIUS` | `4000` | px |
+| `SCHOOL_SIZE` | `12` | |
+| `GROUP_DEPLETED_THRESHOLD` | `3` | |
+| `GROUP_SPAWN_AHEAD_MIN/MAX` | `900` / `1500` | px |
+| `POISONOUS_FISH_COUNT` | `2` | |
+| `HIGH_SCORE_KEY` | `hungry-shark-best-score` | localStorage |
 
-**Remove or deprecate:** `BOOST_DURATION`, `BOOST_COOLDOWN`, `BOOST_STATES` (READY/ACTIVE/COOLDOWN).
-
-**Keep:** `HIGH_SCORE_KEY` — persists best **strike score** (points), shown on start/game-over screens only.
-
----
-
-## 7. Implementation Gap Checklist
-
-Map each target rule to likely code touchpoints:
-
-| Area | Current file(s) | Change required |
-|------|-----------------|-----------------|
-| Fish group spawn / no respawn | `src/domain/fish.js`, `src/domain/entities.js`, `src/engine/collision.js`, `src/engine/game.js` | Remove `respawnFish()` for common fish; add ahead-of-shark group spawning; track groups |
-| Poison DOT | `src/engine/collision.js`, `src/domain/shark.js`, `src/engine/game.js` | Replace instant damage with 4 s DOT timer; light green tint |
-| Hunger & HP regen | `src/config/constant.js`, `src/engine/game.js` | Starvation + HP regen (+10/s after 2s clear of starve/poison/damage); light red tint |
-| Strike score | `src/engine/game.js`, `src/engine/collision.js` | Remove `score += deltaSec`; add chain state + bonus on fish eat |
-| Boost meter | `src/domain/shark.js`, `src/config/constant.js`, `src/engine/input.js` | Replace burst/cooldown FSM with meter drain/regen; toggle off support |
-| HUD bars | `src/engine/render.js`, `css/style.css`, possibly `index.html` | Top-right layout; HP red bar, boost dark blue bar, golden score; no numbers |
-| Settings menu | `index.html`, `css/style.css`, `src/index.js` | ⚙ button + Continue / Restart / Music mock |
-| Best score (HUD only) | `src/engine/render.js` | Remove best score from in-game HUD; keep on start/game-over via `game.js` / `index.html` |
-| Start/game-over copy | `index.html`, `src/engine/game.js` | Update score labels to points; keep best score display (localStorage) |
-| Bombs | — | **No changes** |
+**Deprecated (unused in code):** `MIN_ACTIVE_GROUPS`, `MAX_ACTIVE_GROUPS`, `GROUP_SPAWN_INTERVAL` — replaced by vicinity spawning.
 
 ---
 
-## 8. Testing Checklist (Post-Implementation)
+## 7. Key Source Files
 
-- [ ] Eat common fish → score +5, hunger resets, fish gone, no respawn at that spot
-- [ ] Eat 3 fish within 2 s each → score +5, +10, +20
-- [ ] Eat 5 fish in chain → +5, +10, +20, +40, +80; 6th fish still +80
-- [ ] Wait 2 s after eat → next fish scores +5 again
-- [ ] 10 s without food → light red shark, −5 HP/s; no regen while starving
-- [ ] Eat fish while damaged → regen only after 2 s with no starvation, poison, or HP loss
-- [ ] Bomb or poison → regen paused; resumes 2 s after last damage/poison clears
-- [ ] Eat fish → no instant HP bump; hunger reset only (does not bypass poison/damage blocks)
-- [ ] Poisonous fish → light green shark, −20 HP over 4 s total
-- [ ] Double-click boost → 2× speed, meter drains; stop boosting → drain stops
-- [ ] 2 s after boost stops → meter refills over 10 s
-- [ ] New fish groups appear ahead as shark swims — map never feels permanently empty
-- [ ] HUD top-right: red HP bar, dark blue boost bar, golden score — no best score on HUD
-- [ ] Start and game-over screens still show best score (points, localStorage)
-- [ ] Settings menu: continue, restart, music mock all respond
-- [ ] Game over shows point score, not survival seconds
-- [ ] Bombs still behave exactly as before
+| Area | File(s) |
+|------|---------|
+| Constants | `src/config/constant.js` |
+| Shark + gravity | `src/domain/shark.js` |
+| Fish groups | `src/domain/fishGroups.js` |
+| Bombs | `src/domain/bomb.js`, `src/domain/bombGroups.js` |
+| Spawn helpers | `src/domain/spawn.js` |
+| Drawing / water | `src/domain/drawing.js` |
+| Game loop | `src/engine/game.js` |
+| HUD / background | `src/engine/render.js` |
+| Menus | `src/engine/menu.js`, `src/engine/howToPlay.js`, `src/engine/settings.js` |
+| Pages | `pages/*.html`, `css/*.css` |
+
+---
+
+## 8. Testing Checklist
+
+- [ ] 6 fish schools within ~4000 px; schools repopulate when shark swims away
+- [ ] 5 bombs within ~2000 px; 10 s respawn after explosion
+- [ ] Sky jump: gravity arc; splash depth matches jump height
+- [ ] Boost: double-click + hold LMB; drain stops on release
+- [ ] Strike chain, hunger, poison DOT, HP regen windows
+- [ ] Main menu → play; pause → quit; game over → quit
+- [ ] How to play tutorial navigates all 3 slides
+- [ ] Best score on menu/game over only (not in-run HUD)
+
+---
+
+## 9. Planned Work
+
+| Item | Description |
+|------|-------------|
+| **[DEV] Sound effects** | Eat fish, damage, bomb explosion, UI clicks; wire to Web Audio or `<audio>`; extend mock music toggle into a real audio manager |
+| **Humans at surface** | High-risk surface targets |
+| **Aggressive predator fish** | Chase behavior |
+
+---
+
+## 10. Historical Changelog (Design → Code)
+
+The table below records the original 2026 design migration. All rows except audio are **implemented** as of diary entry 025.
+
+| System | Was (early MVP) | Now (implemented) |
+|--------|-----------------|-------------------|
+| Common fish | Individual respawn | Groups only; vicinity spawning |
+| Poison | Instant −20 | 4 s DOT |
+| Hunger | 5 s / −10 HP/s | 10 s / −5 HP/s |
+| HP on eat | +5 instant | Delayed regen only |
+| Score | Time-based | Strike chain |
+| Boost | Fixed burst + cooldown | Meter + hold LMB |
+| HUD | Top-left text | Top-right bars |
+| Bombs | Single bomb, 5 s respawn | 5 bombs / 2000 px, 10 s respawn |
+| Sky | No gravity | Gravity + splash depth |
