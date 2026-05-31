@@ -1,4 +1,6 @@
-import { drawSharkShape } from "../domain/drawing.js";
+import { drawSharkSprite } from "../domain/drawing.js";
+import { getSharkSprite } from "./assets.js";
+import { MENU_SHARK_SPRITE_HEIGHT } from "../config/constant.js";
 
 let menuSharkFrameId = null;
 
@@ -22,7 +24,14 @@ export function startMenuSharkAnimation(canvas) {
     const wiggle = Math.sin(time * 0.7) * 0.08;
 
     ctx.clearRect(0, 0, width, height);
-    drawSharkShape(ctx, width / 2, height / 2 + bob, wiggle, 38, "#546e7a", 3);
+    drawSharkSprite(
+      ctx,
+      getSharkSprite(),
+      width / 2,
+      height / 2 + bob,
+      wiggle,
+      MENU_SHARK_SPRITE_HEIGHT
+    );
 
     menuSharkFrameId = requestAnimationFrame(frame);
   }

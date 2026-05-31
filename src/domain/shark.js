@@ -5,8 +5,10 @@ import {
   BOOST_DRAIN_DURATION,
   BOOST_REGEN_DELAY,
   BOOST_REGEN_DURATION,
+  SHARK_SPRITE_HEIGHT,
 } from "../config/constant.js";
-import { drawSharkShape } from "./drawing.js";
+import { drawSharkSprite, drawSharkBodyGlow } from "./drawing.js";
+import { getSharkSprite } from "../engine/assets.js";
 
 export class Shark {
   constructor(x, y) {
@@ -108,14 +110,34 @@ export class Shark {
   }
 
   draw(ctx) {
-    let bodyColor = "#546e7a";
+    let statusColor = null;
     if (this.hitFlash > 0) {
-      bodyColor = "#ef5350";
+      statusColor = "#ef5350";
     } else if (this.isPoisoned) {
-      bodyColor = "#a5d6a7";
+      statusColor = "#a5d6a7";
     } else if (this.isStarving) {
-      bodyColor = "#ef9a9a";
+      statusColor = "#ef9a9a";
     }
-    drawSharkShape(ctx, this.x, this.y, this.angle, this.radius, bodyColor, 3);
+
+    if (statusColor) {
+      drawSharkBodyGlow(
+        ctx,
+        getSharkSprite(),
+        this.x,
+        this.y,
+        this.angle,
+        SHARK_SPRITE_HEIGHT,
+        statusColor
+      );
+    }
+
+    drawSharkSprite(
+      ctx,
+      getSharkSprite(),
+      this.x,
+      this.y,
+      this.angle,
+      SHARK_SPRITE_HEIGHT
+    );
   }
 }

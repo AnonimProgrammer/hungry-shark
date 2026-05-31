@@ -47,6 +47,10 @@ export const GROUP_SPAWN_AHEAD_MAX = 1500;
 export const GROUP_SPAWN_ANGLE_SPREAD = 0.75;
 export const POISONOUS_FISH_COUNT = 2;
 
+/** On-screen shark sprite height (collision still uses Shark.radius). */
+export const SHARK_SPRITE_HEIGHT = 180;
+export const MENU_SHARK_SPRITE_HEIGHT = 440;
+
 export const BOOST_MULTIPLIER = 2;
 export const BOOST_METER_MAX = 100;
 export const BOOST_DRAIN_DURATION = 2.5;

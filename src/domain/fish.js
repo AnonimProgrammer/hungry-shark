@@ -1,4 +1,4 @@
-import { drawSharkShape } from "./drawing.js";
+import { drawSimpleFish, drawLionfish } from "./drawing.js";
 import {
   randomPoisonFishPosition,
   getFishVerticalBounds,
@@ -8,7 +8,7 @@ export class Fish {
   constructor(x, y, type = "common", groupId = null) {
     this.x = x;
     this.y = y;
-    this.radius = 10;
+    this.radius = type === "poisonous" ? 12 : 10;
     this.type = type;
     this.groupId = groupId;
     this.speedX = (Math.random() - 0.5) * (type === "common" ? 0.9 : 1.6);
@@ -37,9 +37,14 @@ export class Fish {
       return;
     }
 
-    const bodyColor = this.type === "common" ? "#ff9800" : "#4caf50";
     const angle = Math.atan2(this.speedY, this.speedX);
-    drawSharkShape(ctx, this.x, this.y, angle, this.radius, bodyColor, 2);
+
+    if (this.type === "poisonous") {
+      drawLionfish(ctx, this.x, this.y, angle, this.radius);
+      return;
+    }
+
+    drawSimpleFish(ctx, this.x, this.y, angle, this.radius, "#ff9800");
   }
 }
 

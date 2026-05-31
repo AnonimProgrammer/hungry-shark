@@ -19,6 +19,7 @@ import {
   closeMainSettings,
 } from "./engine/settings.js";
 import { bindMockMenuButtons, showMainMenu } from "./engine/menu.js";
+import { loadGameAssets } from "./engine/assets.js";
 
 async function loadPage(container, path) {
   const response = await fetch(path);
@@ -29,9 +30,9 @@ async function loadPage(container, path) {
 }
 
 async function loadOverlays(container) {
-  await loadPage(container, "page/main-menu.html");
-  await loadPage(container, "page/pause-menu.html");
-  await loadPage(container, "page/main-settings.html");
+  await loadPage(container, "pages/main-menu.html");
+  await loadPage(container, "pages/pause-menu.html");
+  await loadPage(container, "pages/main-settings.html");
 }
 
 function createDomRefs() {
@@ -59,6 +60,7 @@ function createDomRefs() {
 
 async function init() {
   const container = document.getElementById("game-container");
+  await loadGameAssets();
   await loadOverlays(container);
 
   const canvas = document.getElementById("game-canvas");
