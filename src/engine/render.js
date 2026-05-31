@@ -4,9 +4,18 @@ import {
   WATER_SURFACE_Y,
   SEABED_WORLD_Y,
   SEABED_HEIGHT,
-  isStarving,
   BOOST_METER_MAX,
 } from "../config/constant.js";
+
+const HUD_MARGIN = 20;
+const HUD_HP_BAR_WIDTH = 180;
+const HUD_BOOST_BAR_WIDTH = 120;
+const HUD_BAR_HEIGHT = 16;
+const HUD_LABEL_GAP = 10;
+const HUD_ROW_GAP = 10;
+const HUD_SCORE_GAP = 12;
+const HUD_LABEL_FONT = "bold 16px sans-serif";
+const HUD_SCORE_FONT = "bold 22px sans-serif";
 
 export function drawBackground(ctx, camera) {
   const surfaceScreenY = WATER_SURFACE_Y - camera.y;
@@ -59,65 +68,82 @@ export function drawBackground(ctx, camera) {
   }
 }
 
+function drawStatBar(ctx, x, y, width, height, ratio, fillColor) {
+  const clamped = Math.max(0, Math.min(1, ratio));
+  ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+  ctx.fillRect(x, y, width, height);
+  ctx.fillStyle = fillColor;
+  ctx.fillRect(x, y, width * clamped, height);
+}
+
+function drawLabeledBar(ctx, label, labelRightX, barX, barY, barWidth, barHeight, ratio, fillColor) {
+  ctx.font = HUD_LABEL_FONT;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText(label, labelRightX, barY + barHeight / 2);
+
+  drawStatBar(ctx, barX, barY, barWidth, barHeight, ratio, fillColor);
+}
+
 export function drawHud(ctx, game, shark) {
   if (game.state !== "playing") {
     return;
   }
 
-  const starving = isStarving(game.hungerTimer);
+  const top = HUD_MARGIN;
+  const rightEdge = CANVAS_WIDTH - HUD_MARGIN;
+  const hpBarX = rightEdge - HUD_HP_BAR_WIDTH;
+  const hpLabelRightX = hpBarX - HUD_LABEL_GAP;
+  const boostBarX = rightEdge - HUD_BOOST_BAR_WIDTH;
+  const boostLabelRightX = boostBarX - HUD_LABEL_GAP;
 
-  ctx.font = "16px sans-serif";
-  ctx.textAlign = "left";
+  drawLabeledBar(
+    ctx,
+    "HP",
+    hpLabelRightX,
+    hpBarX,
+    top,
+    HUD_HP_BAR_WIDTH,
+    HUD_BAR_HEIGHT,
+    shark.hp / 100,
+    "#e53935"
+  );
+
+  const boostY = top + HUD_BAR_HEIGHT + HUD_ROW_GAP;
+  const boostFill = shark.isActivelyBoosting ? "#42a5f5" : "#1565c0";
+  drawLabeledBar(
+    ctx,
+    "Boost",
+    boostLabelRightX,
+    boostBarX,
+    boostY,
+    HUD_BOOST_BAR_WIDTH,
+    HUD_BAR_HEIGHT,
+    shark.boostMeter / BOOST_METER_MAX,
+    boostFill
+  );
+
+  const scoreY = boostY + HUD_BAR_HEIGHT + HUD_SCORE_GAP;
+  const scoreValue = String(Math.floor(game.score));
+  ctx.font = HUD_SCORE_FONT;
+  ctx.textAlign = "right";
   ctx.textBaseline = "top";
+  ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
+  ctx.shadowBlur = 4;
+  ctx.shadowOffsetX = 1;
+  ctx.shadowOffsetY = 1;
 
-  ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
-  ctx.fillRect(8, 8, 168, 118);
-
+  const scoreNumWidth = ctx.measureText(scoreValue).width;
+  ctx.fillStyle = "#ffd700";
+  ctx.fillText("★", rightEdge - scoreNumWidth - 6, scoreY);
   ctx.fillStyle = "#ffffff";
-  ctx.fillText(`HP: ${Math.ceil(shark.hp)}`, 16, 16);
-  ctx.fillStyle = "#ffd54f";
-  ctx.fillText(`Score: ${Math.floor(game.score)}`, 16, 38);
-  ctx.fillStyle = starving ? "#ff5252" : "#ffffff";
-  const hungerLabel = starving
-    ? "Starving!"
-    : `Hunger: ${game.hungerTimer.toFixed(1)}s`;
-  ctx.fillText(hungerLabel, 16, 60);
-  ctx.fillStyle = "#ffd54f";
-  ctx.fillText(`Best: ${game.highScore}`, 16, 82);
+  ctx.fillText(scoreValue, rightEdge, scoreY);
 
-  drawBoostMeter(ctx, shark, 16, 100);
-}
-
-function drawBoostMeter(ctx, shark, x, y) {
-  const barWidth = 140;
-  const barHeight = 10;
-  const fillRatio = shark.boostMeter / BOOST_METER_MAX;
-
-  let label;
-  let fillColor;
-
-  if (shark.isActivelyBoosting) {
-    label = "Boost: ACTIVE";
-    fillColor = "#76ff03";
-  } else if (shark.boostMeter <= 0) {
-    label = "Boost: empty";
-    fillColor = "#ff9100";
-  } else if (shark.boostMeter < BOOST_METER_MAX) {
-    label = "Boost: recharging";
-    fillColor = "#1565c0";
-  } else {
-    label = "Boost: ready (dbl-click + hold)";
-    fillColor = "#1565c0";
-  }
-
-  ctx.fillStyle = "#ffffff";
-  ctx.fillText(label, x, y);
-
-  const barY = y + 18;
-  ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
-  ctx.fillRect(x, barY, barWidth, barHeight);
-  ctx.fillStyle = fillColor;
-  ctx.fillRect(x, barY, barWidth * fillRatio, barHeight);
+  ctx.shadowColor = "transparent";
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
 }
 
 export function render(ctx, game, shark, fishes, bomb, camera) {

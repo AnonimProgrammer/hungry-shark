@@ -21,6 +21,9 @@ All tools below are **free-tier**.
 
 ## Entries
 
+### [2026-05-31] — Top-right HUD bars
+18. [top-right-hud-bars](prompts/018-top-right-hud-bars.md) — HP/boost bars top-right, golden score below, best score removed from in-game HUD
+
 ### [2026-05-31] — Boost meter drain & hold
 17. [boost-meter-drain-regen](prompts/017-boost-meter-drain-regen.md) — Meter-based boost; dbl-click + hold LMB to boost, release to stop
 
