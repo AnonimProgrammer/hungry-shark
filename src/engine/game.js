@@ -13,10 +13,11 @@ import { resetStrikeState, updateStrikeChain } from "./score.js";
 import { updateCamera, screenToWorld } from "./camera.js";
 import { render } from "./render.js";
 import { pauseGame } from "./settings.js";
+import { hideMainMenu } from "./menu.js";
 
 export function createGameState() {
   return {
-    state: "start",
+    state: "menu",
     score: 0,
     strikeChainTimer: 0,
     lastBonus: 0,
@@ -39,7 +40,7 @@ function saveHighScore(score) {
 
 export function updateHighScoreDisplay(game, dom) {
   const label = `Best: ${game.highScore}`;
-  dom.startHighScoreEl.textContent = label;
+  dom.mainMenuHighScoreEl.textContent = label;
   dom.gameOverHighScoreEl.textContent = label;
 }
 
@@ -110,9 +111,10 @@ export function resetGame(game, shark, domain, input) {
 export function startGame(game, shark, domain, input, dom) {
   resetGame(game, shark, domain, input);
   game.state = "playing";
-  dom.startScreen.classList.add("hidden");
+  hideMainMenu(dom);
   dom.gameOverScreen.classList.add("hidden");
-  dom.settingsMenu.classList.add("hidden");
+  dom.pauseMenu.classList.add("hidden");
+  dom.mainSettingsMenu.classList.add("hidden");
 }
 
 function update(game, shark, domain, input, dom, deltaSec) {

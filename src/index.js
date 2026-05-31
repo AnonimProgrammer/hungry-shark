@@ -14,36 +14,52 @@ import {
   resumeGame,
   quitToHome,
   toggleMusic,
-  updateMusicButtonLabel,
+  updateMusicButtonLabels,
+  openMainSettings,
+  closeMainSettings,
 } from "./engine/settings.js";
+import { bindMockMenuButtons, showMainMenu } from "./engine/menu.js";
 
-async function loadSettingsMenu(container) {
-  const response = await fetch("page/settings-menu.html");
+async function loadPage(container, path) {
+  const response = await fetch(path);
   if (!response.ok) {
-    throw new Error(`Failed to load settings menu: ${response.status}`);
+    throw new Error(`Failed to load ${path}: ${response.status}`);
   }
   container.insertAdjacentHTML("beforeend", await response.text());
 }
 
+async function loadOverlays(container) {
+  await loadPage(container, "page/main-menu.html");
+  await loadPage(container, "page/pause-menu.html");
+  await loadPage(container, "page/main-settings.html");
+}
+
 function createDomRefs() {
   return {
-    startScreen: document.getElementById("start-screen"),
+    mainMenu: document.getElementById("main-menu"),
     gameOverScreen: document.getElementById("game-over-screen"),
-    settingsMenu: document.getElementById("settings-menu"),
-    startBtn: document.getElementById("start-btn"),
+    pauseMenu: document.getElementById("pause-menu"),
+    mainSettingsMenu: document.getElementById("main-settings-menu"),
+    menuSharkCanvas: document.getElementById("menu-shark-canvas"),
+    playBtn: document.getElementById("play-btn"),
     restartBtn: document.getElementById("restart-btn"),
-    settingsResumeBtn: document.getElementById("settings-resume-btn"),
-    settingsQuitBtn: document.getElementById("settings-quit-btn"),
-    settingsMusicBtn: document.getElementById("settings-music-btn"),
+    mainSettingsBtn: document.getElementById("main-settings-btn"),
+    howToPlayBtn: document.getElementById("how-to-play-btn"),
+    sharkShopBtn: document.getElementById("shark-shop-btn"),
+    pauseResumeBtn: document.getElementById("pause-resume-btn"),
+    pauseQuitBtn: document.getElementById("pause-quit-btn"),
+    pauseMusicBtn: document.getElementById("pause-music-btn"),
+    mainSettingsMusicBtn: document.getElementById("main-settings-music-btn"),
+    mainSettingsCloseBtn: document.getElementById("main-settings-close-btn"),
     finalScoreEl: document.getElementById("final-score"),
-    startHighScoreEl: document.getElementById("start-high-score"),
+    mainMenuHighScoreEl: document.getElementById("main-menu-high-score"),
     gameOverHighScoreEl: document.getElementById("game-over-high-score"),
   };
 }
 
 async function init() {
   const container = document.getElementById("game-container");
-  await loadSettingsMenu(container);
+  await loadOverlays(container);
 
   const canvas = document.getElementById("game-canvas");
   canvas.width = CANVAS_WIDTH;
@@ -65,13 +81,19 @@ async function init() {
 
   game.highScore = loadHighScore();
   updateHighScoreDisplay(game, dom);
-  updateMusicButtonLabel(game, dom);
+  updateMusicButtonLabels(game, dom);
+  showMainMenu(game, dom, input);
 
-  dom.startBtn.addEventListener("click", () => startGame(game, shark, domain, input, dom));
+  bindMockMenuButtons(dom);
+
+  dom.playBtn.addEventListener("click", () => startGame(game, shark, domain, input, dom));
   dom.restartBtn.addEventListener("click", () => startGame(game, shark, domain, input, dom));
-  dom.settingsResumeBtn.addEventListener("click", () => resumeGame(game, dom, domain));
-  dom.settingsQuitBtn.addEventListener("click", () => quitToHome(game, dom, input));
-  dom.settingsMusicBtn.addEventListener("click", () => toggleMusic(game, dom));
+  dom.mainSettingsBtn.addEventListener("click", () => openMainSettings(dom));
+  dom.mainSettingsCloseBtn.addEventListener("click", () => closeMainSettings(dom));
+  dom.pauseResumeBtn.addEventListener("click", () => resumeGame(game, dom, domain));
+  dom.pauseQuitBtn.addEventListener("click", () => quitToHome(game, dom, input));
+  dom.pauseMusicBtn.addEventListener("click", () => toggleMusic(game, dom));
+  dom.mainSettingsMusicBtn.addEventListener("click", () => toggleMusic(game, dom));
 
   requestAnimationFrame(createGameLoop(ctx, game, shark, domain, input, dom));
 }

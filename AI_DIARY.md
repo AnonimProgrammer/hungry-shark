@@ -21,6 +21,9 @@ All tools below are **free-tier**.
 
 ## Entries
 
+### [2026-05-31] — Main menu
+20. [main-menu](prompts/020-main-menu.md) — Landing screen with shark, best score, play/settings/mock buttons; page/ overlay structure
+
 ### [2026-05-31] — In-game settings menu mock
 19. [settings-menu-mock](prompts/019-settings-menu-mock.md) — Circular pause button on HUD; Resume, Quit, mock music toggle
 
