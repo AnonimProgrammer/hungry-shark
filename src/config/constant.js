@@ -48,14 +48,10 @@ export const GROUP_SPAWN_ANGLE_SPREAD = 0.75;
 export const POISONOUS_FISH_COUNT = 2;
 
 export const BOOST_MULTIPLIER = 2;
-export const BOOST_DURATION = 2.5;
-export const BOOST_COOLDOWN = 5;
-
-export const BOOST_STATES = {
-  READY: "READY",
-  ACTIVE: "ACTIVE",
-  COOLDOWN: "COOLDOWN",
-};
+export const BOOST_METER_MAX = 100;
+export const BOOST_DRAIN_DURATION = 2.5;
+export const BOOST_REGEN_DELAY = 2;
+export const BOOST_REGEN_DURATION = 10;
 
 /** How far from the shark new entities spawn in world space. */
 export const SPAWN_SPREAD_X = 700;

@@ -1,9 +1,10 @@
 import {
   SEABED_WORLD_Y,
   BOOST_MULTIPLIER,
-  BOOST_DURATION,
-  BOOST_COOLDOWN,
-  BOOST_STATES,
+  BOOST_METER_MAX,
+  BOOST_DRAIN_DURATION,
+  BOOST_REGEN_DELAY,
+  BOOST_REGEN_DURATION,
 } from "../config/constant.js";
 import { drawSharkShape } from "./drawing.js";
 
@@ -22,45 +23,69 @@ export class Shark {
     this.lastDirY = 0;
     this.poisonTimer = 0;
     this.poisonDamageRemaining = 0;
-    this.boostStatus = BOOST_STATES.READY;
-    this.boostTimer = 0;
+    this.boostMeter = BOOST_METER_MAX;
+    this.boostArmed = false;
+    this.isActivelyBoosting = false;
+    this.boostIdleTimer = 0;
   }
 
-  getSpeed() {
-    if (this.boostStatus === BOOST_STATES.ACTIVE) {
+  isBoostActive(isSwimming) {
+    return this.boostArmed && isSwimming && this.boostMeter > 0;
+  }
+
+  getSpeed(isSwimming) {
+    if (this.isBoostActive(isSwimming)) {
       return this.baseSpeed * BOOST_MULTIPLIER;
     }
     return this.baseSpeed;
   }
 
-  tryActivateBoost() {
-    if (this.boostStatus !== BOOST_STATES.READY) {
+  armBoost() {
+    if (this.boostMeter <= 0) {
       return false;
     }
-    this.boostStatus = BOOST_STATES.ACTIVE;
-    this.boostTimer = BOOST_DURATION;
+    this.boostArmed = true;
+    this.boostIdleTimer = 0;
     return true;
   }
 
-  updateBoost(deltaSec) {
-    if (this.boostStatus === BOOST_STATES.ACTIVE) {
-      this.boostTimer -= deltaSec;
-      if (this.boostTimer <= 0) {
-        this.boostStatus = BOOST_STATES.COOLDOWN;
-        this.boostTimer = BOOST_COOLDOWN;
+  updateBoost(deltaSec, isSwimming) {
+    if (!isSwimming) {
+      this.boostArmed = false;
+    }
+
+    this.isActivelyBoosting = this.isBoostActive(isSwimming);
+
+    if (this.isActivelyBoosting) {
+      this.boostIdleTimer = 0;
+      const drainRate = BOOST_METER_MAX / BOOST_DRAIN_DURATION;
+      this.boostMeter -= drainRate * deltaSec;
+      if (this.boostMeter <= 0) {
+        this.boostMeter = 0;
+        this.boostArmed = false;
+        this.isActivelyBoosting = false;
       }
-    } else if (this.boostStatus === BOOST_STATES.COOLDOWN) {
-      this.boostTimer -= deltaSec;
-      if (this.boostTimer <= 0) {
-        this.boostStatus = BOOST_STATES.READY;
-        this.boostTimer = 0;
-      }
+      return;
+    }
+
+    this.boostIdleTimer += deltaSec;
+    if (
+      this.boostIdleTimer >= BOOST_REGEN_DELAY &&
+      this.boostMeter < BOOST_METER_MAX
+    ) {
+      const regenRate = BOOST_METER_MAX / BOOST_REGEN_DURATION;
+      this.boostMeter = Math.min(
+        BOOST_METER_MAX,
+        this.boostMeter + regenRate * deltaSec
+      );
     }
   }
 
   resetBoost() {
-    this.boostStatus = BOOST_STATES.READY;
-    this.boostTimer = 0;
+    this.boostMeter = BOOST_METER_MAX;
+    this.boostArmed = false;
+    this.isActivelyBoosting = false;
+    this.boostIdleTimer = 0;
   }
 
   rotateToward(targetX, targetY) {

@@ -21,6 +21,9 @@ All tools below are **free-tier**.
 
 ## Entries
 
+### [2026-05-31] — Boost meter drain & hold
+17. [boost-meter-drain-regen](prompts/017-boost-meter-drain-regen.md) — Meter-based boost; dbl-click + hold LMB to boost, release to stop
+
 ### [2026-05-30] — Fish groups spawn ahead (no eat respawn)
 16. [fish-group-spawn-ahead](prompts/016-fish-group-spawn-ahead.md) — 2 active school groups ahead of shark; common fish removed on eat permanently
 

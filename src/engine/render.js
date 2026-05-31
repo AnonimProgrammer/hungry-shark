@@ -5,9 +5,7 @@ import {
   SEABED_WORLD_Y,
   SEABED_HEIGHT,
   isStarving,
-  BOOST_DURATION,
-  BOOST_COOLDOWN,
-  BOOST_STATES,
+  BOOST_METER_MAX,
 } from "../config/constant.js";
 
 export function drawBackground(ctx, camera) {
@@ -93,23 +91,23 @@ export function drawHud(ctx, game, shark) {
 function drawBoostMeter(ctx, shark, x, y) {
   const barWidth = 140;
   const barHeight = 10;
+  const fillRatio = shark.boostMeter / BOOST_METER_MAX;
 
   let label;
-  let fillRatio;
   let fillColor;
 
-  if (shark.boostStatus === BOOST_STATES.ACTIVE) {
+  if (shark.isActivelyBoosting) {
     label = "Boost: ACTIVE";
-    fillRatio = shark.boostTimer / BOOST_DURATION;
     fillColor = "#76ff03";
-  } else if (shark.boostStatus === BOOST_STATES.COOLDOWN) {
-    label = "Boost: cooldown";
-    fillRatio = 1 - shark.boostTimer / BOOST_COOLDOWN;
+  } else if (shark.boostMeter <= 0) {
+    label = "Boost: empty";
     fillColor = "#ff9100";
+  } else if (shark.boostMeter < BOOST_METER_MAX) {
+    label = "Boost: recharging";
+    fillColor = "#1565c0";
   } else {
-    label = "Boost: ready (dbl-click)";
-    fillRatio = 1;
-    fillColor = "#69f0ae";
+    label = "Boost: ready (dbl-click + hold)";
+    fillColor = "#1565c0";
   }
 
   ctx.fillStyle = "#ffffff";

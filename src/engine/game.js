@@ -120,14 +120,14 @@ function update(game, shark, domain, input, dom, deltaSec) {
   shark.rotateToward(worldMouse.x, worldMouse.y);
 
   if (input.doubleClicked) {
-    shark.tryActivateBoost();
+    shark.armBoost();
     input.doubleClicked = false;
   }
 
-  shark.updateBoost(deltaSec);
+  shark.updateBoost(deltaSec, input.isMouseDown);
 
   if (input.isMouseDown) {
-    shark.moveForward(shark.getSpeed());
+    shark.moveForward(shark.getSpeed(input.isMouseDown));
   }
 
   domain.fishes.forEach((fish) => {
