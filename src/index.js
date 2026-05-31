@@ -46,6 +46,7 @@ function createDomRefs() {
     menuSharkCanvas: document.getElementById("menu-shark-canvas"),
     playBtn: document.getElementById("play-btn"),
     restartBtn: document.getElementById("restart-btn"),
+    gameOverQuitBtn: document.getElementById("game-over-quit-btn"),
     mainSettingsBtn: document.getElementById("main-settings-btn"),
     howToPlayBtn: document.getElementById("how-to-play-btn"),
     sharkShopBtn: document.getElementById("shark-shop-btn"),
@@ -102,6 +103,7 @@ async function init() {
 
   dom.playBtn.addEventListener("click", () => startGame(game, shark, domain, input, dom));
   dom.restartBtn.addEventListener("click", () => startGame(game, shark, domain, input, dom));
+  dom.gameOverQuitBtn.addEventListener("click", () => quitToHome(game, dom, input));
   dom.mainSettingsBtn.addEventListener("click", () => openMainSettings(dom));
   dom.mainSettingsCloseBtn.addEventListener("click", () => closeMainSettings(dom));
   dom.pauseResumeBtn.addEventListener("click", () => resumeGame(game, dom, domain));

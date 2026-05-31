@@ -90,6 +90,7 @@ export function resetGame(game, shark, domain, input) {
   shark.isStarving = false;
   resetHpState(shark, game);
   shark.resetBoost();
+  shark.resetAirborne();
 
   resetStrikeState(game);
   game.hungerTimer = 0;
@@ -124,18 +125,15 @@ function update(game, shark, domain, input, dom, deltaSec) {
   updateTimers(game, shark, deltaSec);
 
   const worldMouse = screenToWorld(domain.camera, input.mouseX, input.mouseY);
-  shark.rotateToward(worldMouse.x, worldMouse.y);
+  const isSwimming = input.isMouseDown && !shark.isAirborne;
 
   if (input.doubleClicked) {
     shark.armBoost();
     input.doubleClicked = false;
   }
 
-  shark.updateBoost(deltaSec, input.isMouseDown);
-
-  if (input.isMouseDown) {
-    shark.moveForward(shark.getSpeed(input.isMouseDown));
-  }
+  shark.updateBoost(deltaSec, isSwimming);
+  shark.updateMovement(deltaSec, isSwimming, worldMouse.x, worldMouse.y);
 
   domain.fishes.forEach((fish) => {
     fish.update();

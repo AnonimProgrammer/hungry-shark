@@ -1,6 +1,8 @@
 import {
   BOMB_RESPAWN_DELAY,
   BOMB_EXPLOSION_DURATION,
+  BOMB_EXPLOSION_START_RADIUS,
+  BOMB_EXPLOSION_MAX_RADIUS,
 } from "../config/constant.js";
 import { randomBombPosition } from "./spawn.js";
 
@@ -82,7 +84,8 @@ export class Bomb {
 
 export function drawBombExplosion(ctx, x, y, timeLeft) {
   const progress = 1 - timeLeft / BOMB_EXPLOSION_DURATION;
-  const baseRadius = 16 + progress * 48;
+  const radiusSpan = BOMB_EXPLOSION_MAX_RADIUS - BOMB_EXPLOSION_START_RADIUS;
+  const baseRadius = BOMB_EXPLOSION_START_RADIUS + progress * radiusSpan;
 
   ctx.save();
   ctx.globalAlpha = 1 - progress * 0.85;

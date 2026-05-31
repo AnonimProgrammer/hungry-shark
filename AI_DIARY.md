@@ -21,6 +21,9 @@ All tools below are **free-tier**.
 
 ## Entries
 
+### [2026-05-31] — Sky gravity & jump physics
+23. [sky-gravity-mechanics](prompts/023-sky-gravity-mechanics.md) — Ballistic arcs above water; swim control in water only, gravity pulls shark down in sky
+
 ### [2026-05-31] — How to play tutorial
 22. [how-to-play-tutorial](prompts/022-how-to-play-tutorial.md) — 3-slide guide: HUD callouts, eat fish demo, avoid bomb/lionfish demo
 

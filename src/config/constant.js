@@ -31,6 +31,8 @@ export const POISON_TICK_RATE = 5;
 export const BOMB_DAMAGE = 30;
 export const BOMB_RESPAWN_DELAY = 5;
 export const BOMB_EXPLOSION_DURATION = 0.45;
+export const BOMB_EXPLOSION_START_RADIUS = 28;
+export const BOMB_EXPLOSION_MAX_RADIUS = 120;
 export const HIGH_SCORE_KEY = "hungry-shark-best-score";
 export const STRIKE_BASE_BONUS = 5;
 export const STRIKE_MAX_BONUS = 80;
@@ -56,6 +58,12 @@ export const BOOST_METER_MAX = 100;
 export const BOOST_DRAIN_DURATION = 2.5;
 export const BOOST_REGEN_DELAY = 2;
 export const BOOST_REGEN_DURATION = 10;
+
+/** Downward acceleration when the shark is above the water surface (px/s²). */
+export const GRAVITY = 520;
+
+/** Converts per-frame swim speed to px/s (matches ~60 fps baseline). */
+export const SHARK_SPEED_FPS = 60;
 
 /** How far from the shark new entities spawn in world space. */
 export const SPAWN_SPREAD_X = 700;

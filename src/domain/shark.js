@@ -1,4 +1,5 @@
 import {
+  WATER_SURFACE_Y,
   SEABED_WORLD_Y,
   BOOST_MULTIPLIER,
   BOOST_METER_MAX,
@@ -6,6 +7,8 @@ import {
   BOOST_REGEN_DELAY,
   BOOST_REGEN_DURATION,
   SHARK_SPRITE_HEIGHT,
+  GRAVITY,
+  SHARK_SPEED_FPS,
 } from "../config/constant.js";
 import { drawSharkSprite, drawSharkBodyGlow } from "./drawing.js";
 import { getSharkSprite } from "../engine/assets.js";
@@ -29,6 +32,15 @@ export class Shark {
     this.boostArmed = false;
     this.isActivelyBoosting = false;
     this.boostIdleTimer = 0;
+    this.isAirborne = false;
+    this.velocityX = 0;
+    this.velocityY = 0;
+    this.peakAirHeight = 0;
+    this.diveTargetY = null;
+  }
+
+  isInWater() {
+    return this.y >= WATER_SURFACE_Y;
   }
 
   isBoostActive(isSwimming) {
@@ -43,7 +55,7 @@ export class Shark {
   }
 
   armBoost() {
-    if (this.boostMeter <= 0) {
+    if (this.boostMeter <= 0 || this.isAirborne) {
       return false;
     }
     this.boostArmed = true;
@@ -90,22 +102,95 @@ export class Shark {
     this.boostIdleTimer = 0;
   }
 
+  resetAirborne() {
+    this.isAirborne = false;
+    this.velocityX = 0;
+    this.velocityY = 0;
+    this.peakAirHeight = 0;
+    this.diveTargetY = null;
+  }
+
+  beginAirJump() {
+    this.isAirborne = true;
+    this.peakAirHeight = Math.max(0, WATER_SURFACE_Y - this.y);
+    this.diveTargetY = null;
+  }
+
   rotateToward(targetX, targetY) {
     this.angle = Math.atan2(targetY - this.y, targetX - this.x);
   }
 
-  moveForward(speed) {
+  setVelocityFromSwim(speed) {
     this.lastDirX = Math.cos(this.angle);
     this.lastDirY = Math.sin(this.angle);
+    const speedPxSec = speed * SHARK_SPEED_FPS;
+    this.velocityX = this.lastDirX * speedPxSec;
+    this.velocityY = this.lastDirY * speedPxSec;
+  }
+
+  moveForward(speed) {
+    this.setVelocityFromSwim(speed);
     this.x += this.lastDirX * speed;
     this.y += this.lastDirY * speed;
     this.applyWorldPhysics();
+  }
+
+  applyAirPhysics(deltaSec) {
+    if (this.y < WATER_SURFACE_Y) {
+      this.peakAirHeight = Math.max(this.peakAirHeight, WATER_SURFACE_Y - this.y);
+    }
+
+    this.velocityY += GRAVITY * deltaSec;
+    this.x += this.velocityX * deltaSec;
+    this.y += this.velocityY * deltaSec;
+
+    if (this.velocityX !== 0 || this.velocityY !== 0) {
+      this.angle = Math.atan2(this.velocityY, this.velocityX);
+      this.lastDirX = Math.cos(this.angle);
+      this.lastDirY = Math.sin(this.angle);
+    }
+
+    if (this.diveTargetY === null && this.isInWater()) {
+      const floorY = SEABED_WORLD_Y - this.radius;
+      this.diveTargetY = Math.min(
+        WATER_SURFACE_Y + this.peakAirHeight,
+        floorY
+      );
+    }
+
+    if (this.diveTargetY !== null && this.y >= this.diveTargetY) {
+      this.y = this.diveTargetY;
+      this.resetAirborne();
+    }
+
+    this.applyWorldPhysics();
+  }
+
+  updateMovement(deltaSec, isSwimming, targetX, targetY) {
+    if (this.isAirborne) {
+      this.applyAirPhysics(deltaSec);
+      return;
+    }
+
+    this.rotateToward(targetX, targetY);
+
+    if (isSwimming) {
+      this.moveForward(this.getSpeed(isSwimming));
+    }
+
+    if (!this.isInWater()) {
+      this.beginAirJump();
+    }
   }
 
   applyWorldPhysics() {
     const floorY = SEABED_WORLD_Y - this.radius;
     if (this.y > floorY) {
       this.y = floorY;
+      if (this.isAirborne) {
+        this.velocityY = 0;
+        this.resetAirborne();
+      }
     }
   }
 
