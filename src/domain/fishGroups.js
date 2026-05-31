@@ -9,9 +9,10 @@ import {
 import {
   getDefaultSpawnCenterY,
   getGroupSpawnAnchor,
-  randomBombPosition,
 } from "./spawn.js";
-import { Bomb } from "./bomb.js";
+import {
+  createInitialBombs,
+} from "./bombGroups.js";
 import {
   createFishSchool,
   createPoisonousFish,
@@ -110,15 +111,14 @@ export function createInitialEntities(shark, spawnCenter = getDefaultSpawnCenter
     fishes.push(createPoisonousFish(spawnCenter.x, spawnCenter.y));
   }
 
-  const bombPos = randomBombPosition(spawnCenter.x, spawnCenter.y);
-  const bomb = new Bomb(bombPos.x, bombPos.y);
+  const bombs = createInitialBombs(spawnCenter.x, spawnCenter.y);
 
   const domain = { nextGroupId: 0, groupSpawnTimer: 0 };
   ensureMinimumGroups(shark, fishes, domain);
 
   return {
     fishes,
-    bomb,
+    bombs,
     nextGroupId: domain.nextGroupId,
     groupSpawnTimer: 0,
   };

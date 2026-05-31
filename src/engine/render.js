@@ -184,7 +184,7 @@ export function drawHud(ctx, game, shark) {
   ctx.shadowOffsetY = 0;
 }
 
-export function render(ctx, game, shark, fishes, bomb, camera) {
+export function render(ctx, game, shark, fishes, bombs, camera) {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
   drawBackground(ctx, camera);
 
@@ -192,7 +192,7 @@ export function render(ctx, game, shark, fishes, bomb, camera) {
   ctx.translate(-camera.x, -camera.y);
 
   fishes.forEach((fish) => fish.draw(ctx));
-  bomb.draw(ctx);
+  bombs.forEach((bomb) => bomb.draw(ctx));
   shark.draw(ctx);
 
   ctx.restore();

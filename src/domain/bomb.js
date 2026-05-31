@@ -4,7 +4,7 @@ import {
   BOMB_EXPLOSION_START_RADIUS,
   BOMB_EXPLOSION_MAX_RADIUS,
 } from "../config/constant.js";
-import { randomBombPosition } from "./spawn.js";
+import { findBombSpawnPosition } from "./spawn.js";
 
 export class Bomb {
   constructor(x, y) {
@@ -23,7 +23,7 @@ export class Bomb {
     this.explosionTimer = BOMB_EXPLOSION_DURATION;
   }
 
-  update(deltaSec, respawnNearX, respawnNearY) {
+  update(deltaSec, shark, allBombs) {
     if (this.exploding) {
       this.explosionTimer -= deltaSec;
       if (this.explosionTimer <= 0) {
@@ -36,7 +36,11 @@ export class Bomb {
     if (!this.active && this.respawnTimer > 0) {
       this.respawnTimer -= deltaSec;
       if (this.respawnTimer <= 0) {
-        const pos = randomBombPosition(respawnNearX, respawnNearY);
+        const pos = findBombSpawnPosition(
+          shark.x,
+          shark.y,
+          allBombs.filter((bomb) => bomb !== this)
+        );
         this.x = pos.x;
         this.y = pos.y;
         this.active = true;

@@ -21,6 +21,9 @@ All tools below are **free-tier**.
 
 ## Entries
 
+### [2026-05-31] — Multi-bomb vicinity spawning
+24. [multi-bomb-vicinity-spawn](prompts/024-multi-bomb-vicinity-spawn.md) — 5 bombs within 2000px of shark, 500px min spacing, 10s respawn, relocate when shark moves away
+
 ### [2026-05-31] — Sky gravity & jump physics
 23. [sky-gravity-mechanics](prompts/023-sky-gravity-mechanics.md) — Ballistic arcs above water; swim control in water only, gravity pulls shark down in sky
 

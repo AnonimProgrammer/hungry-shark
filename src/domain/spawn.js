@@ -9,6 +9,9 @@ import {
   GROUP_SPAWN_AHEAD_MIN,
   GROUP_SPAWN_AHEAD_MAX,
   GROUP_SPAWN_ANGLE_SPREAD,
+  BOMB_MIN_SEPARATION,
+  BOMB_SPAWN_MIN_DISTANCE,
+  BOMB_SPAWN_MAX_DISTANCE,
 } from "../config/constant.js";
 
 const WATER_BOUNDS = {
@@ -71,6 +74,55 @@ export function randomBombPosition(centerX, centerY) {
     bounds.hazardMinY,
     randomHazardMaxY()
   );
+}
+
+function clampBombY(y, bounds) {
+  const minY = bounds.hazardMinY;
+  const maxY = randomHazardMaxY();
+  return Math.max(minY, Math.min(maxY, y));
+}
+
+function isBombPositionValid(x, y, sharkX, sharkY, existingBombs, ignoreBomb = null) {
+  const sharkDist = Math.hypot(x - sharkX, y - sharkY);
+  if (sharkDist < BOMB_SPAWN_MIN_DISTANCE || sharkDist > BOMB_SPAWN_MAX_DISTANCE) {
+    return false;
+  }
+
+  for (const bomb of existingBombs) {
+    if (bomb === ignoreBomb || !bomb.active || bomb.exploding) {
+      continue;
+    }
+    if (Math.hypot(x - bomb.x, y - bomb.y) < BOMB_MIN_SEPARATION) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+export function findBombSpawnPosition(sharkX, sharkY, existingBombs, ignoreBomb = null) {
+  const bounds = getWaterBounds();
+  const minY = bounds.hazardMinY;
+  const maxY = randomHazardMaxY();
+
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const angle = Math.random() * Math.PI * 2;
+    const distance =
+      BOMB_SPAWN_MIN_DISTANCE +
+      Math.random() * (BOMB_SPAWN_MAX_DISTANCE - BOMB_SPAWN_MIN_DISTANCE);
+    const x = sharkX + Math.cos(angle) * distance;
+    const y = clampBombY(sharkY + Math.sin(angle) * distance, bounds);
+
+    if (y < minY || y > maxY) {
+      continue;
+    }
+
+    if (isBombPositionValid(x, y, sharkX, sharkY, existingBombs, ignoreBomb)) {
+      return { x, y };
+    }
+  }
+
+  return randomBombPosition(sharkX, sharkY);
 }
 
 export function getFishVerticalBounds(radius, type = "common") {

@@ -29,10 +29,20 @@ export const POISON_DURATION = 4;
 export const POISON_DAMAGE = 20;
 export const POISON_TICK_RATE = 5;
 export const BOMB_DAMAGE = 30;
-export const BOMB_RESPAWN_DELAY = 5;
+export const BOMB_RESPAWN_DELAY = 10;
 export const BOMB_EXPLOSION_DURATION = 0.45;
 export const BOMB_EXPLOSION_START_RADIUS = 28;
 export const BOMB_EXPLOSION_MAX_RADIUS = 120;
+export const BOMB_TARGET_COUNT = 5;
+/** Active bombs required within this radius of the shark. */
+export const BOMB_VICINITY_RADIUS = 2000;
+/** Minimum distance between any two bombs when placing. */
+export const BOMB_MIN_SEPARATION = 500;
+/** Bomb placement distance from the shark (spawn ring). */
+export const BOMB_SPAWN_MIN_DISTANCE = 500;
+export const BOMB_SPAWN_MAX_DISTANCE = 2000;
+/** Bombs farther than this from the shark may be relocated into the vicinity. */
+export const BOMB_FAR_RELOCATE_DISTANCE = 3000;
 export const HIGH_SCORE_KEY = "hungry-shark-best-score";
 export const STRIKE_BASE_BONUS = 5;
 export const STRIKE_MAX_BONUS = 80;

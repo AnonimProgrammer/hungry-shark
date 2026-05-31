@@ -31,15 +31,17 @@ export function handleFishCollisions(shark, fishes, game) {
   });
 }
 
-export function handleBombCollision(shark, bomb, game) {
-  if (bomb.active && checkCollision(shark, bomb)) {
-    applyDamage(shark, game, BOMB_DAMAGE);
-    shark.hitFlash = 12;
-    bomb.explode();
-  }
+export function handleBombCollisions(shark, bombs, game) {
+  bombs.forEach((bomb) => {
+    if (bomb.active && checkCollision(shark, bomb)) {
+      applyDamage(shark, game, BOMB_DAMAGE);
+      shark.hitFlash = 12;
+      bomb.explode();
+    }
+  });
 }
 
-export function evaluateCollisions(shark, fishes, bomb, game) {
+export function evaluateCollisions(shark, fishes, bombs, game) {
   handleFishCollisions(shark, fishes, game);
-  handleBombCollision(shark, bomb, game);
+  handleBombCollisions(shark, bombs, game);
 }

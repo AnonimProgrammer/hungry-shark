@@ -6,6 +6,7 @@ import {
 } from "../config/constant.js";
 import { createInitialEntities, getDefaultSpawnCenter } from "../domain/entities.js";
 import { maintainFishGroups } from "../domain/fishGroups.js";
+import { maintainBombs } from "../domain/bombGroups.js";
 import { recycleDistantPoisonFish } from "../domain/fish.js";
 import { evaluateCollisions } from "./collision.js";
 import { applyDamage, resetHpState, updateHpRegen } from "./hp.js";
@@ -99,7 +100,7 @@ export function resetGame(game, shark, domain, input) {
 
   const entities = createInitialEntities(shark, spawnCenter);
   domain.fishes = entities.fishes;
-  domain.bomb = entities.bomb;
+  domain.bombs = entities.bombs;
   domain.nextGroupId = entities.nextGroupId;
   domain.groupSpawnTimer = 0;
 
@@ -140,7 +141,7 @@ function update(game, shark, domain, input, dom, deltaSec) {
     recycleDistantPoisonFish(fish, shark.x, shark.y, ENTITY_RECYCLE_DISTANCE);
   });
   maintainFishGroups(shark, domain.fishes, domain, deltaSec);
-  domain.bomb.update(deltaSec, shark.x, shark.y);
+  maintainBombs(shark, domain.bombs, deltaSec);
 
   if (shark.hitFlash > 0) {
     shark.hitFlash -= 1;
@@ -148,7 +149,7 @@ function update(game, shark, domain, input, dom, deltaSec) {
 
   updateCamera(domain.camera, shark.x, shark.y);
 
-  evaluateCollisions(shark, domain.fishes, domain.bomb, game);
+  evaluateCollisions(shark, domain.fishes, domain.bombs, game);
   updateHpRegen(game, shark, deltaSec);
   checkLoseCondition(game, shark, dom);
 }
@@ -169,7 +170,7 @@ export function createGameLoop(ctx, game, shark, domain, input, dom) {
       }
     }
 
-    render(ctx, game, shark, domain.fishes, domain.bomb, domain.camera);
+    render(ctx, game, shark, domain.fishes, domain.bombs, domain.camera);
     requestAnimationFrame(gameLoop);
   };
 }
